@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>Statistics — Flashely</title>
+<link rel="icon" href="/favicon.png"/>
+<link rel="stylesheet" href="/fl.css"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<style>
+.gauge-wrap{position:relative;width:140px;margin:0 auto}
+.gauge-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+.gauge-val{font-size:22px;font-weight:800;letter-spacing:-.5px}
+.gauge-sub{font-size:11px;color:var(--fg2);font-weight:600;margin-top:2px}
+.net-dir{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--bd2)}
+.net-dir:last-child{border-bottom:none}
+.net-arrow{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+</style>
+</head>
+<body>
+<div class="shell">
+<div class="shell-aside"><aside class="aside" id="aside">
+  <div class="aside-brand"><div class="brand-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div class="brand-text"><div class="brand-name">Flashely</div><div class="brand-sub">Hyfo Technology</div></div></div>
+  <div class="aside-nav" id="aside-nav"></div>
+  <div class="aside-foot"><button class="aside-toggle" id="aside-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg><span class="aside-toggle-lbl">Collapse</span></button></div>
+</aside></div>
+<div class="shell-body">
+  <div class="topbar"><div><div class="tb-title" id="tb-title">Statistics</div></div><div class="row gap-2"><div class="live"><div class="ldot"></div>LIVE</div><button class="btn bg btn-ico btn-sm" id="theme-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/></svg></button></div></div>
+  <div class="ctx-bar" id="ctx-bar"></div>
+  <div class="shell-content"><div class="page">
+
+    <!-- Gauges row -->
+    <div class="g4 mb-4" style="grid-template-columns:repeat(auto-fill,minmax(140px,1fr))">
+      <div class="card" style="text-align:center">
+        <div class="gauge-wrap"><canvas id="g-cpu" width="140" height="140"></canvas>
+        <div class="gauge-label"><div class="gauge-val pr" id="gv-cpu">0%</div><div class="gauge-sub">CPU</div></div></div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div class="gauge-wrap"><canvas id="g-ram" width="140" height="140"></canvas>
+        <div class="gauge-label"><div class="gauge-val ok" id="gv-ram">0%</div><div class="gauge-sub">Memory</div></div></div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div class="gauge-wrap"><canvas id="g-disk" width="140" height="140"></canvas>
+        <div class="gauge-label"><div class="gauge-val inf" id="gv-disk">0%</div><div class="gauge-sub">Disk</div></div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-ico" style="background:rgba(45,212,191,.12);color:#2DD4BF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <div class="stat-val" id="sv-uptime">—</div>
+        <div class="stat-lbl">System Uptime</div>
+      </div>
+    </div>
+
+    <!-- CPU + Memory line charts -->
+    <div class="g2 mb-4">
+      <div class="card">
+        <div class="c-hd"><div class="c-ico ci-v"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div><div class="c-title">CPU History</div><div class="c-sub">60 second window</div></div></div>
+        <div style="position:relative;height:140px"><canvas id="cpu-hist"></canvas></div>
+        <div class="row gap-4 mt-3">
+          <div><div class="muted text-xs">Current</div><div class="semi" id="cpu-cur">—</div></div>
+          <div><div class="muted text-xs">Average</div><div class="semi" id="cpu-avg">—</div></div>
+          <div><div class="muted text-xs">Peak</div><div class="semi" id="cpu-peak">—</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="c-hd"><div class="c-ico ci-g"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="6" width="22" height="12" rx="2"/><path d="M1 10h22"/></svg></div><div><div class="c-title">Memory History</div><div class="c-sub">60 second window</div></div></div>
+        <div style="position:relative;height:140px"><canvas id="ram-hist"></canvas></div>
+        <div class="row gap-4 mt-3">
+          <div><div class="muted text-xs">Used</div><div class="semi" id="ram-used">—</div></div>
+          <div><div class="muted text-xs">Total</div><div class="semi" id="ram-total">—</div></div>
+          <div><div class="muted text-xs">Free</div><div class="semi" id="ram-free">—</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- System info + Network -->
+    <div class="g2 mb-4">
+      <div class="card">
+        <div class="c-hd"><div class="c-ico ci-b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div><div class="c-title">System</div></div>
+        <div id="sys-rows"></div>
+      </div>
+      <div class="card">
+        <div class="c-hd"><div class="c-ico ci-t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-4h14v4M12 8v4"/></svg></div><div class="c-title">Network</div></div>
+        <div class="net-dir"><div class="net-arrow" style="background:var(--ok-bg);color:var(--ok)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="width:14px;height:14px"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></div><div class="flex-1"><div class="text-sm semi">Upload Speed</div><div class="muted text-xs">Outbound</div></div><div class="semi" id="net-up">—</div></div>
+        <div class="net-dir"><div class="net-arrow" style="background:var(--inf-bg);color:var(--inf)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="width:14px;height:14px"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg></div><div class="flex-1"><div class="text-sm semi">Download Speed</div><div class="muted text-xs">Inbound</div></div><div class="semi" id="net-down">—</div></div>
+        <div class="divider"></div>
+        <div class="irow"><span class="ik">Total Upload</span><span class="iv" id="net-tx">—</span></div>
+        <div class="irow"><span class="ik">Total Download</span><span class="iv" id="net-rx">—</span></div>
+        <div class="irow"><span class="ik">Interface</span><span class="iv" id="net-iface">—</span></div>
+      </div>
+    </div>
+
+    <!-- Per-server resource usage -->
+    <div class="card">
+      <div class="c-hd"><div class="c-ico ci-p"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><div class="c-title">All Servers</div><div class="c-sub">Resource usage per server</div></div>
+      <div id="all-servers" class="col gap-3"></div>
+    </div>
+
+  </div></div>
+</div></div>
+<div class="bnav" id="bnav"></div>
+<div class="drawer-bg" id="drawer-bg"></div>
+<div class="drawer" id="drawer"></div>
+<div class="toast-root"></div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script src="/fl.js"></script>
+<script>
+Flashely.init('stats');
+
+// Gauge helper
+function makeGauge(id, color) {
+  return new Chart(document.getElementById(id), {
+    type: 'doughnut',
+    data: { datasets: [{ data: [0, 100], backgroundColor: [color, 'rgba(255,255,255,.06)'], borderWidth: 0, circumference: 270, rotation: 225 }] },
+    options: { responsive: true, maintainAspectRatio: true, cutout: '78%', plugins: { legend: { display: false } }, animation: { duration: 400 } }
+  });
+}
+const gCpu  = makeGauge('g-cpu',  '#818CF8');
+const gRam  = makeGauge('g-ram',  '#34D399');
+const gDisk = makeGauge('g-disk', '#60A5FA');
+
+// Line chart helper
+function makeLineChart(id, color) {
+  return new Chart(document.getElementById(id), {
+    type: 'line',
+    data: { labels: Array(60).fill(''), datasets: [{ data: Array(60).fill(0), borderColor: color, borderWidth: 2, fill: true, backgroundColor: color.replace(')',', .1)').replace('rgb','rgba'), tension: .4, pointRadius: 0 }] },
+    options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { min: 0, max: 100, ticks: { color: '#7C8099', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,.04)' }, border: { display: false } } } }
+  });
+}
+const cpuChart = makeLineChart('cpu-hist', 'rgb(129,140,248)');
+const ramChart = makeLineChart('ram-hist', 'rgb(52,211,153)');
+const cpuHistory = Array(60).fill(0), ramHistory = Array(60).fill(0);
+
+function updateGauge(chart, pct, labelId, colorArr) {
+  const color = pct > 85 ? '#F87171' : pct > 60 ? '#FBBF24' : colorArr;
+  chart.data.datasets[0].data = [pct, 100 - pct];
+  chart.data.datasets[0].backgroundColor[0] = color;
+  chart.update('none');
+  const el = document.getElementById(labelId);
+  if (el) { el.textContent = pct + '%'; el.className = 'gauge-val ' + (pct > 85 ? 'err' : pct > 60 ? 'warn' : ''); }
+}
+
+function irow(k, v) { return `<div class="irow"><span class="ik">${k}</span><span class="iv">${v||'—'}</span></div>`; }
+
+const COLORS = ['#818CF8','#34D399','#F87171','#FBBF24','#60A5FA','#E879F9','#2DD4BF','#FB923C'];
+function gc(n){let h=0;for(let c of n)h=c.charCodeAt(0)+((h<<5)-h);return COLORS[Math.abs(h)%COLORS.length];}
+
+async function loadStats() {
+  const [sys, apps, net] = await Promise.all([
+    Flashely.api('/system_full'),
+    Flashely.api('/list-apps'),
+    Flashely.api('/network_stats'),
+  ]);
+
+  if (sys.Success) {
+    const d = sys.Data;
+    const cpuPct = d.cpu || 0;
+    const ramPct = d.ramTotal ? Math.round(d.ramUsed / d.ramTotal * 100) : 0;
+    const diskPct = d.diskTotal ? Math.round(d.diskUsed / d.diskTotal * 100) : 0;
+
+    updateGauge(gCpu, cpuPct, 'gv-cpu', '#818CF8');
+    updateGauge(gRam, ramPct, 'gv-ram', '#34D399');
+    updateGauge(gDisk, diskPct, 'gv-disk', '#60A5FA');
+    document.getElementById('sv-uptime').textContent = Flashely.uptime(d.uptime || 0);
+
+    cpuHistory.push(cpuPct); cpuHistory.shift();
+    ramHistory.push(ramPct); ramHistory.shift();
+    cpuChart.data.datasets[0].data = [...cpuHistory]; cpuChart.update('none');
+    ramChart.data.datasets[0].data = [...ramHistory]; ramChart.update('none');
+
+    const avg = v => Math.round(v.reduce((a,b)=>a+b,0)/v.length);
+    document.getElementById('cpu-cur').textContent = cpuPct + '%';
+    document.getElementById('cpu-avg').textContent = avg(cpuHistory) + '%';
+    document.getElementById('cpu-peak').textContent = Math.max(...cpuHistory) + '%';
+    document.getElementById('ram-used').textContent = Flashely.bytes(d.ramUsed);
+    document.getElementById('ram-total').textContent = Flashely.bytes(d.ramTotal);
+    document.getElementById('ram-free').textContent = Flashely.bytes(d.ramTotal - d.ramUsed);
+
+    document.getElementById('sys-rows').innerHTML =
+      irow('OS', d.os) + irow('Kernel', d.kernel) + irow('Hostname', d.hostname) +
+      irow('CPU', d.cpuModel) + irow('Cores', d.cores) + irow('Architecture', d.arch) +
+      irow('Node.js', d.node) + irow('RAM Total', Flashely.bytes(d.ramTotal)) +
+      irow('Disk Total', Flashely.bytes(d.diskTotal));
+  }
+
+  if (net.Success && net.Data) {
+    const n = net.Data;
+    document.getElementById('net-up').textContent = Flashely.bytes(n.txSec||0)+'/s';
+    document.getElementById('net-down').textContent = Flashely.bytes(n.rxSec||0)+'/s';
+    document.getElementById('net-tx').textContent = Flashely.bytes(n.txTotal||0);
+    document.getElementById('net-rx').textContent = Flashely.bytes(n.rxTotal||0);
+    document.getElementById('net-iface').textContent = n.iface || '—';
+  }
+
+  if (Array.isArray(apps) && apps.length) {
+    const sysRam = sys.Success ? sys.Data.ramTotal : 0;
+    document.getElementById('all-servers').innerHTML = apps.map(a => {
+      const name = a.App?.Name || '?';
+      const cpu = a.CPU || 0;
+      const mem = a.Memory || 0;
+      const memPct = sysRam ? Math.round(mem / sysRam * 100) : 0;
+      const color = gc(name);
+      const cpuC = cpu > 85 ? 'err' : cpu > 60 ? 'warn' : 'ok';
+      return `<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div style="width:34px;height:34px;border-radius:10px;background:${color}18;color:${color};display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0">${name[0].toUpperCase()}</div>
+        <div style="flex:1;min-width:180px">
+          <div class="row-sb mb-2"><span class="semi" style="font-size:13px">${name}</span>${Flashely.statusBadge(a.App?.Status||'stopped')}</div>
+          <div class="row gap-2 mb-1"><span class="text-xs muted" style="width:36px">CPU</span><div class="pbar" style="flex:1"><div class="pbar-fill ${cpuC}" style="width:${cpu}%"></div></div><span class="text-xs semi" style="width:36px;text-align:right">${cpu}%</span></div>
+          <div class="row gap-2"><span class="text-xs muted" style="width:36px">RAM</span><div class="pbar" style="flex:1"><div class="pbar-fill ok" style="width:${memPct}%"></div></div><span class="text-xs semi" style="width:60px;text-align:right">${Flashely.bytes(mem)}</span></div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+}
+
+loadStats();
+setInterval(loadStats, 3000);
+</script>
+</body>
+</html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>Settings — Flashely</title>
+<link rel="icon" href="/favicon.png"/>
+<link rel="stylesheet" href="/fl.css"/>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+<style>
+.tech-card{background:var(--s3);border:2px solid var(--bd);border-radius:var(--r8);padding:14px;cursor:pointer;transition:all var(--t1);display:flex;flex-direction:column;align-items:center;gap:6px}
+.tech-card:hover{border-color:var(--pr)}
+.tech-card.sel{border-color:var(--pr);background:var(--pr-bg)}
+.tech-card svg{width:24px;height:24px}
+.tech-card .tc-name{font-size:12px;font-weight:700}
+</style>
+</head>
+<body>
+<div class="shell">
+<div class="shell-aside"><aside class="aside" id="aside">
+  <div class="aside-brand"><div class="brand-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div class="brand-text"><div class="brand-name">Flashely</div><div class="brand-sub">Hyfo Technology</div></div></div>
+  <div class="aside-nav" id="aside-nav"></div>
+  <div class="aside-foot"><button class="aside-toggle" id="aside-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg><span class="aside-toggle-lbl">Collapse</span></button></div>
+</aside></div>
+<div class="shell-body">
+  <div class="topbar"><div><div class="tb-title" id="tb-title">Settings</div></div><div class="row gap-2"><button class="btn bg btn-ico btn-sm" id="theme-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/></svg></button></div></div>
+  <div class="ctx-bar" id="ctx-bar"></div>
+  <div class="shell-content"><div class="page">
+
+    <!-- Server Information -->
+    <div class="card mb-4">
+      <div class="c-hd">
+        <div class="c-ico ci-v"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+        <div><div class="c-title">Server Information</div><div class="c-sub">Basic details about this server</div></div>
+      </div>
+      <div class="col gap-4">
+        <div class="g2" style="gap:12px">
+          <div class="fld"><label class="lbl">Server Name</label><input class="inp" id="srv-name" placeholder="my-bot"/></div>
+          <div class="fld"><label class="lbl">Main Entry File</label><input class="inp mono" id="srv-entry" placeholder="index.js"/></div>
+        </div>
+        <div class="fld"><label class="lbl">Description</label><textarea class="inp" id="srv-desc" rows="3" placeholder="What does this server do?"></textarea></div>
+        <button class="btn bf btn-sm" style="align-self:flex-start" onclick="saveInfo()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+          Save Changes
+        </button>
+      </div>
+    </div>
+
+    <!-- Runtime Technology -->
+    <div class="card mb-4">
+      <div class="c-hd"><div class="c-ico ci-g"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg></div><div><div class="c-title">Runtime Technology</div><div class="c-sub">Change the runtime environment</div></div></div>
+      <div class="g4 mb-4" style="grid-template-columns:repeat(auto-fill,minmax(100px,1fr))">
+        <div class="tech-card sel" id="rt-node" onclick="selectRT('node',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+          <div class="tc-name">Node.js</div>
+        </div>
+        <div class="tech-card" id="rt-bun" onclick="selectRT('bun',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="6"/><path d="M6 14c0 4 2.69 8 6 8s6-4 6-8"/></svg>
+          <div class="tc-name">Bun</div>
+        </div>
+        <div class="tech-card" id="rt-python" onclick="selectRT('python',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2c-5.33 0-5 2.36-5 2.36V6.7h5.09v.66H5.36S2 6.96 2 12.3s3 5.27 3 5.27h1.8v-2.53s-.1-3 2.96-3h5.1s2.86.05 2.86-2.76V5.07S18.16 2 12 2z"/><path d="M12 22c5.33 0 5-2.36 5-2.36V17.3h-5.09v-.66h6.73S22 17.04 22 11.7s-3-5.27-3-5.27h-1.8v2.53s.1 3-2.96 3H8.14S5.28 11.91 5.28 14.72V18.93S5.84 22 12 22z"/></svg>
+          <div class="tc-name">Python</div>
+        </div>
+        <div class="tech-card" id="rt-bash" onclick="selectRT('bash',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+          <div class="tc-name">Bash</div>
+        </div>
+        <div class="tech-card" id="rt-deno" onclick="selectRT('deno',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M9 9h.01M12 9h.01M15 9h.01"/></svg>
+          <div class="tc-name">Deno</div>
+        </div>
+      </div>
+      <button class="btn bt btn-sm" onclick="applyRT()">Apply Runtime</button>
+    </div>
+
+    <!-- Panel Preferences -->
+    <div class="card mb-4">
+      <div class="c-hd"><div class="c-ico ci-b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div><div class="c-title">Panel Preferences</div></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--bd2)">
+        <div><div class="semi" style="font-size:13.5px">Theme</div><div class="muted text-xs mt-1" id="theme-lbl">Current: Dark</div></div>
+        <button class="btn bt btn-sm" id="theme-toggle-btn" onclick="toggleTheme()">Switch Theme</button>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--bd2)">
+        <div><div class="semi" style="font-size:13.5px">Auto-restart on crash</div><div class="muted text-xs mt-1">Automatically restart server on error</div></div>
+        <label class="tgl"><input type="checkbox" id="auto-restart" checked/><div class="tgl-track"><div class="tgl-thumb"></div></div></label>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0">
+        <div><div class="semi" style="font-size:13.5px">Max Restarts</div><div class="muted text-xs mt-1">Limit restart attempts before stopping</div></div>
+        <input class="inp" id="max-restarts" type="number" value="10" min="1" max="999" style="width:80px;height:34px;font-size:13px;text-align:center"/>
+      </div>
+    </div>
+
+    <!-- Danger Zone -->
+    <div class="dzone mb-4">
+      <div class="dzone-t">Danger Zone</div>
+      <div class="dzone-d">These actions are irreversible. Proceed with extreme caution.</div>
+      <div class="col gap-3">
+        <div class="row-sb" style="flex-wrap:wrap;gap:10px">
+          <div><div class="semi" style="font-size:13.5px">Reinstall Server</div><div class="muted text-xs mt-1">Wipes all files and reinstalls from scratch</div></div>
+          <button class="btn bw btn-sm" onclick="reinstallServer()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><polyline points="23 4 23 10 17 10"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+            Reinstall
+          </button>
+        </div>
+        <div class="row-sb" style="flex-wrap:wrap;gap:10px">
+          <div><div class="semi" style="font-size:13.5px">Delete Server</div><div class="muted text-xs mt-1">Permanently delete this server and all its files</div></div>
+          <button class="btn bd-btn btn-sm" onclick="deleteServer()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+            Delete Server
+          </button>
+        </div>
+        <div class="row-sb" style="flex-wrap:wrap;gap:10px">
+          <div><div class="semi" style="font-size:13.5px">Sign Out</div><div class="muted text-xs mt-1">Log out of the panel</div></div>
+          <button class="btn bg btn-sm" onclick="doLogout()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Sign Out
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel Info -->
+    <div class="card">
+      <div class="c-hd"><div class="c-ico ci-t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="c-title">Panel Info</div></div>
+      <div class="irow"><span class="ik">Panel</span><span class="iv">Flashely v3.0</span></div>
+      <div class="irow"><span class="ik">By</span><span class="iv">Hyfo Technology</span></div>
+      <div class="irow"><span class="ik">Node.js</span><span class="iv" id="pi-node">—</span></div>
+      <div class="irow"><span class="ik">Platform</span><span class="iv" id="pi-platform">—</span></div>
+    </div>
+
+  </div></div>
+</div></div>
+<div class="bnav" id="bnav"></div>
+<div class="drawer-bg" id="drawer-bg"></div>
+<div class="drawer" id="drawer"></div>
+<div class="toast-root"></div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+<script src="/fl.js"></script>
+<script>
+Flashely.init('settings-server');
+const srv = Flashely.requireServer();
+if (!srv) throw new Error('no server');
+const srvName = srv.name;
+
+// Pre-fill
+document.getElementById('srv-name').value = srvName;
+document.getElementById('srv-entry').value = srv.entry || 'index.js';
+document.getElementById('theme-lbl').textContent = 'Current: ' + (Flashely.theme === 'dark' ? 'Dark' : 'Light');
+
+let selectedRT = 'node';
+
+function selectRT(rt, el) {
+  selectedRT = rt;
+  document.querySelectorAll('.tech-card').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+async function applyRT() {
+  const cmds = { node:'node --version', bun:'bun --version', python:'python3 --version', bash:'bash --version', deno:'deno --version' };
+  const res = await Flashely.api('/terminal', {method:'POST', body:{command:cmds[selectedRT]||'node --version'}});
+  if (res.output && !res.output.includes('not found')) {
+    Flashely.toast(`${selectedRT} runtime selected and available`, 'success');
+  } else {
+    Flashely.toast(`${selectedRT} may not be installed. Check with terminal.`, 'warning');
+  }
+  // Save to server config
+  await Flashely.api('/update_main', {method:'POST', body:{name:srvName, runtime:selectedRT, main_entry:document.getElementById('srv-entry').value}});
+}
+
+async function saveInfo() {
+  const entry = document.getElementById('srv-entry').value.trim();
+  const res = await Flashely.api('/update_main', {method:'POST', body:{name:srvName, main_entry:entry}});
+  Flashely.toast(res.Message||(res.Success?'Saved!':'Failed'), res.Success?'success':'error');
+}
+
+function toggleTheme() {
+  Flashely.applyTheme(Flashely.theme === 'dark' ? 'light' : 'dark');
+  document.getElementById('theme-lbl').textContent = 'Current: ' + (Flashely.theme === 'dark' ? 'Dark' : 'Light');
+}
+
+async function reinstallServer() {
+  const ok = await Flashely.confirm('Reinstall ' + srvName + '?', 'All files will be deleted. npm packages will be reinstalled.', 'Reinstall', true);
+  if (!ok) return;
+  await Flashely.api('/stop/' + srvName, {method:'POST', body:{}});
+  const res = await Flashely.api('/npm_install/' + srvName);
+  Flashely.toast(res.Message||(res.Success?'Reinstalled':'Failed'), res.Success?'success':'error');
+}
+
+async function deleteServer() {
+  const { value: confirmName } = await Swal.fire({ title: 'Delete ' + srvName, html: `Type <strong>${srvName}</strong> to confirm deletion:`, input:'text', inputPlaceholder: srvName, showCancelButton:true, confirmButtonText:'Delete', confirmButtonColor:'#F87171', background:'var(--s2)', color:'var(--fg)' });
+  if (confirmName !== srvName) { if (confirmName !== undefined) Flashely.toast('Name mismatch — deletion cancelled','error'); return; }
+  const res = await Flashely.api('/delete_app', {method:'POST', body:{name:srvName}});
+  Flashely.toast(res.Message||(res.Success?'Server deleted':'Failed'), res.Success?'success':'error');
+  if (res.Success) { sessionStorage.removeItem('fl_server'); setTimeout(() => window.location.href = '/dashboard', 1500); }
+}
+
+async function doLogout() {
+  await Flashely.api('/logout');
+  sessionStorage.removeItem('fl_server');
+  window.location.href = '/login';
+}
+
+async function loadSysInfo() {
+  const res = await Flashely.api('/system_full');
+  if (res.Success) {
+    document.getElementById('pi-node').textContent = res.Data.node || '—';
+    document.getElementById('pi-platform').textContent = res.Data.os || '—';
+  }
+}
+
+loadSysInfo();
+</script>
+</body>
+</html>

@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>Console — Flashely</title>
+<link rel="icon" href="/favicon.png"/>
+<link rel="stylesheet" href="/fl.css"/>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<style>
+.srv-header-card{background:linear-gradient(135deg,var(--s3),var(--s2));border:1px solid var(--bd);border-radius:var(--r10);padding:20px;margin-bottom:16px}
+.srv-h-top{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px}
+.srv-h-name{font-size:22px;font-weight:800;letter-spacing:-.4px;display:flex;align-items:center;gap:10px}
+.srv-h-meta{font-size:12.5px;color:var(--fg2);margin-top:4px}
+.srv-controls{display:flex;gap:8px;flex-wrap:wrap}
+.srv-quick-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px;padding-top:16px;border-top:1px solid var(--bd2)}
+.qs-item{text-align:center}
+.qs-val{font-size:16px;font-weight:800;letter-spacing:-.3px}
+.qs-lbl{font-size:10px;color:var(--fg2);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.charts-row{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:16px}
+.info-table{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.info-row2{padding:8px 12px;border-bottom:1px solid var(--bd2);display:flex;flex-direction:column;gap:2px}
+.info-row2:nth-child(odd){border-right:1px solid var(--bd2)}
+.cmds-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+@media(max-width:767px){
+  .srv-quick-stats{grid-template-columns:repeat(2,2fr)}
+  .charts-row{grid-template-columns:1fr}
+  .info-table{grid-template-columns:1fr}
+  .info-row2:nth-child(odd){border-right:none}
+  .srv-h-name{font-size:18px}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+<div class="shell-aside"><aside class="aside" id="aside">
+  <div class="aside-brand"><div class="brand-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div class="brand-text"><div class="brand-name">Flashely</div><div class="brand-sub">Hyfo Technology</div></div></div>
+  <div class="aside-nav" id="aside-nav"></div>
+  <div class="aside-foot"><button class="aside-toggle" id="aside-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg><span class="aside-toggle-lbl">Collapse</span></button></div>
+</aside></div>
+<div class="shell-body">
+  <div class="topbar"><div><div class="tb-title" id="tb-title">Console</div></div><div class="row gap-2"><button class="btn bg btn-ico btn-sm" id="theme-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button></div></div>
+  <div class="ctx-bar" id="ctx-bar"></div>
+  <div class="shell-content"><div class="page">
+
+    <!-- Server header -->
+    <div class="srv-header-card" id="srv-header">
+      <div class="srv-h-top">
+        <div>
+          <div class="srv-h-name">
+            <span id="srv-name-h">Loading...</span>
+            <span id="srv-badge"></span>
+          </div>
+          <div class="srv-h-meta" id="srv-meta">Loading server info...</div>
+        </div>
+      </div>
+      <div class="srv-controls">
+        <button class="btn bs" id="btn-start" onclick="serverAction('start')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="5 3 19 12 5 21 5 3"/></svg> Start
+        </button>
+        <button class="btn bw" id="btn-restart" onclick="serverAction('restart')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg> Restart
+        </button>
+        <button class="btn bd-btn" id="btn-stop" onclick="serverAction('stop')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg> Stop
+        </button>
+        <button class="btn bg" id="btn-kill" onclick="serverAction('kill')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> Kill
+        </button>
+      </div>
+      <div class="srv-quick-stats">
+        <div class="qs-item"><div class="qs-val" id="qs-cpu">0%</div><div class="qs-lbl">CPU</div><div class="pbar mt-2"><div class="pbar-fill" id="qs-cpu-b" style="width:0%"></div></div></div>
+        <div class="qs-item"><div class="qs-val" id="qs-ram">0 MB</div><div class="qs-lbl">Memory</div><div class="pbar mt-2"><div class="pbar-fill ok" id="qs-ram-b" style="width:0%"></div></div></div>
+        <div class="qs-item"><div class="qs-val" id="qs-uptime">—</div><div class="qs-lbl">Uptime</div></div>
+        <div class="qs-item"><div class="qs-val" id="qs-pid">—</div><div class="qs-lbl">PID</div></div>
+      </div>
+    </div>
+
+    <!-- Terminal -->
+    <div class="card mb-4">
+      <div class="c-hd">
+        <div class="c-ico ci-v"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg></div>
+        <div><div class="c-title">Console</div><div class="c-sub">Server output & commands</div></div>
+        <div class="row gap-2 ml-a">
+          <div class="live"><div class="ldot"></div>LIVE</div>
+          <button class="btn bg btn-ico btn-sm" onclick="clearLog()" title="Clear">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+          </button>
+          <button class="btn bg btn-ico btn-sm" onclick="toggleAutoScroll()" id="auto-btn" title="Auto-scroll">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="cmds-row">
+        <button class="chip" onclick="sendCmd('node -v')">node -v</button>
+        <button class="chip" onclick="sendCmd('npm -v')">npm -v</button>
+        <button class="chip" onclick="sendCmd('ls -la')">ls -la</button>
+        <button class="chip" onclick="sendCmd('pwd')">pwd</button>
+        <button class="chip" onclick="sendCmd('cat package.json')">package.json</button>
+        <button class="chip" onclick="sendCmd('ps aux')">processes</button>
+      </div>
+      <div class="term-box">
+        <div class="term-head">
+          <div class="term-dot" style="background:#F87171"></div>
+          <div class="term-dot ml-1" style="background:#FBBF24;margin-left:6px"></div>
+          <div class="term-dot" style="background:#34D399;margin-left:6px"></div>
+          <div class="term-title ml-a" id="term-title">console@server</div>
+        </div>
+        <div class="term-out" id="term-out"></div>
+        <div class="term-inp-row">
+          <span class="term-prompt">$</span>
+          <input class="term-inp" id="term-inp" placeholder="Type a command..." autocomplete="off" autocorrect="off" spellcheck="false"/>
+          <button class="btn bf btn-sm btn-sq" onclick="runCmd()" style="margin:6px;border-radius:8px;flex-shrink:0">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-row mb-4">
+      <div class="card">
+        <div class="c-hd"><div class="c-ico ci-v"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div><div class="c-title">CPU History</div><div class="c-sub" id="cpu-pct">Loading...</div></div><div class="live ml-a"><div class="ldot"></div>LIVE</div></div>
+        <div class="chart-container" style="position:relative;height:130px"><canvas id="cpu-chart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="c-hd"><div class="c-ico ci-g"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="6" width="22" height="12" rx="2"/><path d="M1 10h22"/></svg></div><div><div class="c-title">Memory History</div><div class="c-sub" id="ram-lbl">Loading...</div></div></div>
+        <div class="chart-container" style="position:relative;height:130px"><canvas id="ram-chart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Server details -->
+    <div class="g2 mb-4" id="detail-grid">
+      <div class="card">
+        <div class="c-hd"><div class="c-ico ci-b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div><div class="c-title">System Info</div></div>
+        <div id="sys-info-rows">
+          <div class="irow"><span class="ik">OS</span><span class="iv" id="inf-os">—</span></div>
+          <div class="irow"><span class="ik">CPU</span><span class="iv" id="inf-cpu">—</span></div>
+          <div class="irow"><span class="ik">Cores</span><span class="iv" id="inf-cores">—</span></div>
+          <div class="irow"><span class="ik">RAM Total</span><span class="iv" id="inf-ram">—</span></div>
+          <div class="irow"><span class="ik">Disk Used</span><span class="iv" id="inf-disk">—</span></div>
+          <div class="irow"><span class="ik">Node.js</span><span class="iv" id="inf-node">—</span></div>
+          <div class="irow"><span class="ik">Hostname</span><span class="iv" id="inf-host">—</span></div>
+          <div class="irow"><span class="ik">System Uptime</span><span class="iv" id="inf-uptime">—</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="c-hd"><div class="c-ico ci-p"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-4h14v4M12 8v4"/></svg></div><div class="c-title">Server Details</div></div>
+        <div id="srv-detail-rows">
+          <div class="irow"><span class="ik">Name</span><span class="iv" id="det-name">—</span></div>
+          <div class="irow"><span class="ik">Status</span><span class="iv" id="det-status">—</span></div>
+          <div class="irow"><span class="ik">PID</span><span class="iv" id="det-pid">—</span></div>
+          <div class="irow"><span class="ik">Entry File</span><span class="iv" id="det-entry">—</span></div>
+          <div class="irow"><span class="ik">Version</span><span class="iv" id="det-ver">—</span></div>
+          <div class="irow"><span class="ik">Created</span><span class="iv" id="det-created">—</span></div>
+          <div class="irow"><span class="ik">Restarts</span><span class="iv" id="det-restarts">—</span></div>
+          <div class="irow"><span class="ik">CPU Usage</span><span class="iv" id="det-cpu">—</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- System stats bars -->
+    <div class="card mb-4">
+      <div class="c-hd"><div class="c-ico ci-y"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><div class="c-title">Resource Usage</div></div>
+      <div class="col gap-4" id="res-bars">
+        <div><div class="row-sb mb-2"><span class="text-sm muted">CPU Load</span><span class="text-sm semi" id="r-cpu">—</span></div><div class="pbar"><div class="pbar-fill" id="r-cpu-b" style="width:0%"></div></div></div>
+        <div><div class="row-sb mb-2"><span class="text-sm muted">Memory</span><span class="text-sm semi" id="r-ram">—</span></div><div class="pbar"><div class="pbar-fill ok" id="r-ram-b" style="width:0%"></div></div></div>
+        <div><div class="row-sb mb-2"><span class="text-sm muted">Disk</span><span class="text-sm semi" id="r-disk">—</span></div><div class="pbar"><div class="pbar-fill" id="r-disk-b" style="width:0%;background:var(--inf)"></div></div></div>
+      </div>
+    </div>
+
+  </div></div>
+</div></div>
+<div class="bnav" id="bnav"></div>
+<div class="drawer-bg" id="drawer-bg"></div>
+<div class="drawer" id="drawer"></div>
+<div class="toast-root"></div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script src="/fl.js"></script>
+<script>
+Flashely.init('console');
+const srv = Flashely.requireServer();
+if (!srv) throw new Error('no server');
+
+const srvName = srv.name;
+document.getElementById('tb-title').textContent = srvName;
+document.getElementById('srv-name-h').textContent = srvName;
+document.getElementById('term-title').textContent = `console@${srvName}`;
+
+// Charts
+const chartOpts = { responsive:true, maintainAspectRatio:false, animation:false,
+  plugins:{legend:{display:false}},
+  scales:{x:{display:false},y:{min:0,max:100,ticks:{color:'#7C8099',font:{size:10}},grid:{color:'rgba(255,255,255,.04)'},border:{display:false}}}
+};
+const cpuH = Array(60).fill(0), ramH = Array(60).fill(0);
+const cpuChart = new Chart(document.getElementById('cpu-chart'), {
+  type:'line', data:{labels:Array(60).fill(''),datasets:[{data:[...cpuH],borderColor:'#818CF8',borderWidth:2,fill:true,backgroundColor:'rgba(129,140,248,.12)',tension:.4,pointRadius:0}]}, options:chartOpts
+});
+const ramChart = new Chart(document.getElementById('ram-chart'), {
+  type:'line', data:{labels:Array(60).fill(''),datasets:[{data:[...ramH],borderColor:'#34D399',borderWidth:2,fill:true,backgroundColor:'rgba(52,211,153,.1)',tension:.4,pointRadius:0}]}, options:chartOpts
+});
+
+// Terminal
+let autoScroll = true, cmdHistory = [], histIdx = -1;
+function addLog(text, cls = 't-def') {
+  const out = document.getElementById('term-out');
+  const line = document.createElement('div');
+  line.className = 't-line ' + cls;
+  line.textContent = text;
+  out.appendChild(line);
+  if (autoScroll) out.scrollTop = out.scrollHeight;
+  // Keep max 500 lines
+  while (out.children.length > 500) out.removeChild(out.firstChild);
+}
+function clearLog() { document.getElementById('term-out').innerHTML = ''; addLog('Console cleared.','t-sys'); }
+function toggleAutoScroll() { autoScroll = !autoScroll; document.getElementById('auto-btn').style.opacity = autoScroll ? '1' : '.4'; }
+
+document.getElementById('term-inp').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { runCmd(); return; }
+  if (e.key === 'ArrowUp') { histIdx = Math.min(histIdx+1, cmdHistory.length-1); e.target.value = cmdHistory[cmdHistory.length-1-histIdx] || ''; e.preventDefault(); }
+  if (e.key === 'ArrowDown') { histIdx = Math.max(histIdx-1, -1); e.target.value = histIdx < 0 ? '' : cmdHistory[cmdHistory.length-1-histIdx] || ''; e.preventDefault(); }
+});
+
+async function runCmd() {
+  const inp = document.getElementById('term-inp');
+  const cmd = inp.value.trim();
+  if (!cmd) return;
+  cmdHistory.push(cmd); histIdx = -1;
+  inp.value = '';
+  addLog('$ ' + cmd, 't-sys');
+  const res = await Flashely.api('/terminal', {method:'POST', body:{command:cmd}});
+  if (res.output) {
+    res.output.split('\n').forEach(l => {
+      const cls = l.match(/error|Error|ERR/i) ? 't-err' : l.match(/warn|WARN/i) ? 't-warn' : 't-def';
+      addLog(l, cls);
+    });
+  }
+}
+
+function sendCmd(cmd) {
+  document.getElementById('term-inp').value = cmd;
+  runCmd();
+}
+
+async function serverAction(action) {
+  const res = await Flashely.api(`/${action}/${srvName}`, {method:'POST', body:{}});
+  Flashely.toast(res.Message || (res.Success ? `${action} sent` : 'Failed'), res.Success ? 'success' : 'error');
+  if (res.Success) {
+    addLog(`[panel] ${action} command sent`, 't-sys');
+    setTimeout(loadInfo, 2000);
+  }
+}
+
+// Load info
+async function loadInfo() {
+  const [apps, sys] = await Promise.all([
+    Flashely.api('/list-apps'),
+    Flashely.api('/system_full')
+  ]);
+  const app = Array.isArray(apps) ? apps.find(a => a.App?.Name === srvName) : null;
+  if (app) {
+    const st = app.App?.Status || 'offline';
+    document.getElementById('srv-badge').innerHTML = Flashely.statusBadge(st);
+    document.getElementById('srv-meta').textContent = `PID: ${app.App?.Pid||'—'} · Entry: ${app.App?.Entry||'—'} · Created: ${app.App?.Created_Date||'—'}`;
+    const cpu = app.CPU || 0;
+    const mem = app.Memory || 0;
+    const memPct = sys.Success ? Math.round(mem / sys.Data.ramTotal * 100) : 0;
+    document.getElementById('qs-cpu').textContent = cpu + '%';
+    document.getElementById('qs-cpu').className = 'qs-val ' + Flashely.barColor(cpu);
+    document.getElementById('qs-cpu-b').style.width = cpu + '%';
+    document.getElementById('qs-cpu-b').className = 'pbar-fill ' + Flashely.barColor(cpu);
+    document.getElementById('qs-ram').textContent = Flashely.bytes(mem);
+    document.getElementById('qs-ram-b').style.width = Math.min(100, memPct) + '%';
+    document.getElementById('qs-uptime').textContent = Flashely.uptime(app.App?.Uptime||0);
+    document.getElementById('qs-pid').textContent = app.App?.Pid || '—';
+    // Detail
+    document.getElementById('det-name').textContent = srvName;
+    document.getElementById('det-status').innerHTML = Flashely.statusBadge(st);
+    document.getElementById('det-pid').textContent = app.App?.Pid || '—';
+    document.getElementById('det-entry').textContent = app.App?.Entry || '—';
+    document.getElementById('det-ver').textContent = app.App?.Version || '—';
+    document.getElementById('det-created').textContent = app.App?.Created_Date || '—';
+    document.getElementById('det-restarts').textContent = app.App?.Restarts || '0';
+    document.getElementById('det-cpu').textContent = cpu + '%';
+    // Charts
+    cpuH.push(cpu); cpuH.shift();
+    ramH.push(memPct); ramH.shift();
+    cpuChart.data.datasets[0].data = [...cpuH]; cpuChart.update('none');
+    ramChart.data.datasets[0].data = [...ramH]; ramChart.update('none');
+    document.getElementById('cpu-pct').textContent = cpu + '%';
+    document.getElementById('ram-lbl').textContent = Flashely.bytes(mem);
+    // Update ctx bar
+    Flashely.setServer({...Flashely.getServer(), status:st, cpu, memory:mem, pid:app.App?.Pid});
+  }
+  if (sys.Success) {
+    const d = sys.Data;
+    document.getElementById('inf-os').textContent = d.os || '—';
+    document.getElementById('inf-cpu').textContent = d.cpuModel || '—';
+    document.getElementById('inf-cores').textContent = d.cores || '—';
+    document.getElementById('inf-ram').textContent = Flashely.bytes(d.ramTotal);
+    document.getElementById('inf-disk').textContent = `${Flashely.bytes(d.diskUsed)} / ${Flashely.bytes(d.diskTotal)}`;
+    document.getElementById('inf-node').textContent = d.node || '—';
+    document.getElementById('inf-host').textContent = d.hostname || '—';
+    document.getElementById('inf-uptime').textContent = Flashely.uptime(d.uptime);
+    const cpuPct = d.cpu || 0, ramPct = Math.round(d.ramUsed/d.ramTotal*100)||0;
+    const diskPct = d.diskTotal ? Math.round(d.diskUsed/d.diskTotal*100) : 0;
+    document.getElementById('r-cpu').textContent = cpuPct + '%';
+    document.getElementById('r-cpu-b').style.width = cpuPct + '%';
+    document.getElementById('r-cpu-b').className = 'pbar-fill ' + Flashely.barColor(cpuPct);
+    document.getElementById('r-ram').textContent = `${Flashely.bytes(d.ramUsed)} / ${Flashely.bytes(d.ramTotal)}`;
+    document.getElementById('r-ram-b').style.width = ramPct + '%';
+    document.getElementById('r-ram-b').className = 'pbar-fill ' + Flashely.barColor(ramPct);
+    document.getElementById('r-disk').textContent = `${Flashely.bytes(d.diskUsed)} / ${Flashely.bytes(d.diskTotal)}`;
+    document.getElementById('r-disk-b').style.width = diskPct + '%';
+  }
+}
+// Load output log
+async function loadLog() {
+  const res = await Flashely.api(`/output_log/${srvName}`);
+  if (res.Success && res.Data) {
+    document.getElementById('term-out').innerHTML = '';
+    String(res.Data).split('\n').slice(-100).forEach(l => {
+      const cls = l.match(/error|Error|ERR/i)?'t-err':l.match(/warn|WARN/i)?'t-warn':'t-def';
+      addLog(l, cls);
+    });
+  }
+}
+loadInfo(); loadLog();
+setInterval(loadInfo, 3000);
+// Live log polling
+setInterval(async () => {
+  const res = await Flashely.api(`/log/${srvName}?lines=5`);
+  if (res.Success && res.Data) {
+    const lines = String(res.Data).split('\n').filter(Boolean).slice(-3);
+    lines.forEach(l => { if (!l.trim()) return; addLog(l,'t-def'); });
+  }
+}, 4000);
+</script>
+</body>
+</html>

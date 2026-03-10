@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>Environment — Flashely</title>
+<link rel="icon" href="/favicon.png"/>
+<link rel="stylesheet" href="/fl.css"/>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+<style>
+.env-grid{display:flex;flex-direction:column;gap:0}
+.env-row{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--bd2)}
+.env-row:last-child{border-bottom:none}
+.env-k{font-family:var(--mono);font-size:12.5px;color:var(--pr);font-weight:600;padding:6px 10px;background:var(--s3);border-radius:var(--r4);border:1px solid var(--bd)}
+.env-v{font-family:var(--mono);font-size:12.5px;padding:6px 10px;background:var(--s3);border-radius:var(--r4);border:1px solid var(--bd);color:var(--fg);width:100%}
+.env-v:focus{border-color:var(--pr);outline:none}
+.tabs-mode{display:flex;background:var(--s3);border-radius:var(--r8);padding:3px;gap:2px;width:fit-content;margin-bottom:16px}
+</style>
+</head>
+<body>
+<div class="shell">
+<div class="shell-aside"><aside class="aside" id="aside">
+  <div class="aside-brand"><div class="brand-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div class="brand-text"><div class="brand-name">Flashely</div><div class="brand-sub">Hyfo Technology</div></div></div>
+  <div class="aside-nav" id="aside-nav"></div>
+  <div class="aside-foot"><button class="aside-toggle" id="aside-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg><span class="aside-toggle-lbl">Collapse</span></button></div>
+</aside></div>
+<div class="shell-body">
+  <div class="topbar"><div><div class="tb-title" id="tb-title">Environment</div></div><div class="row gap-2"><button class="btn bg btn-ico btn-sm" id="theme-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/></svg></button></div></div>
+  <div class="ctx-bar" id="ctx-bar"></div>
+  <div class="shell-content"><div class="page">
+
+    <div class="card mb-4">
+      <div class="c-hd">
+        <div class="c-ico ci-g"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="15" r="5"/><path d="M15.09 10.72L21 4.81"/><line x1="18" y1="7.5" x2="19.5" y2="6"/></svg></div>
+        <div><div class="c-title">Environment Variables</div><div class="c-sub">Edit .env file for this server</div></div>
+        <div class="row gap-2 ml-a">
+          <button class="btn bg btn-sm" onclick="addVar()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="width:13px;height:13px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Variable
+          </button>
+          <button class="btn bf btn-sm" onclick="saveEnv()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+            Save
+          </button>
+        </div>
+      </div>
+
+      <!-- Mode tabs -->
+      <div class="tabs-mode">
+        <div class="tab act" id="mode-form" onclick="switchMode('form',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          Form
+        </div>
+        <div class="tab" id="mode-raw" onclick="switchMode('raw',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+          Raw .env
+        </div>
+      </div>
+
+      <!-- Form view -->
+      <div id="form-view">
+        <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;padding:6px 0 10px;border-bottom:2px solid var(--bd);margin-bottom:4px">
+          <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--fg2)">Key</span>
+          <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--fg2)">Value</span>
+          <span style="width:60px"></span>
+        </div>
+        <div class="env-grid" id="env-rows"></div>
+      </div>
+
+      <!-- Raw view -->
+      <div id="raw-view" style="display:none">
+        <textarea class="inp mono" id="env-raw" rows="16" placeholder="TOKEN=your-bot-token&#10;PREFIX=!&#10;GUILD_ID=123456789" style="font-size:12.5px;line-height:1.7"></textarea>
+        <div class="muted text-xs mt-2">Edit directly as KEY=VALUE format, one per line. Comments with # are supported.</div>
+      </div>
+    </div>
+
+    <!-- Common presets -->
+    <div class="card">
+      <div class="c-hd"><div class="c-ico ci-y"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><div class="c-title">Quick Presets</div><div class="c-sub">Click to add common variables</div></div>
+      <div class="chips">
+        <div class="chip" onclick="addPreset('TOKEN','your-discord-bot-token')">Discord Token</div>
+        <div class="chip" onclick="addPreset('PREFIX','!')">Bot Prefix</div>
+        <div class="chip" onclick="addPreset('GUILD_ID','')">Guild ID</div>
+        <div class="chip" onclick="addPreset('MONGO_URI','mongodb://localhost:27017/db')">MongoDB URI</div>
+        <div class="chip" onclick="addPreset('PORT','3000')">Port</div>
+        <div class="chip" onclick="addPreset('NODE_ENV','production')">Node ENV</div>
+        <div class="chip" onclick="addPreset('DEBUG','false')">Debug</div>
+        <div class="chip" onclick="addPreset('API_KEY','')">API Key</div>
+      </div>
+    </div>
+
+  </div></div>
+</div></div>
+<div class="bnav" id="bnav"></div>
+<div class="drawer-bg" id="drawer-bg"></div>
+<div class="drawer" id="drawer"></div>
+<div class="toast-root"></div>
+<script src="/fl.js"></script>
+<script>
+Flashely.init('environment');
+const srv = Flashely.requireServer();
+if (!srv) throw new Error('no server');
+const srvName = srv.name;
+
+let vars = [];
+let mode = 'form';
+
+function parseEnv(text) {
+  return text.split('\n').filter(l => l.trim() && !l.trim().startsWith('#')).map(l => {
+    const idx = l.indexOf('=');
+    if (idx < 0) return null;
+    const key = l.slice(0, idx).trim();
+    const val = l.slice(idx + 1).trim().replace(/^["']|["']$/g, '');
+    const hidden = /token|secret|password|key|auth/i.test(key);
+    return { key, val, hidden, shown: false };
+  }).filter(Boolean);
+}
+
+function serializeEnv(vars) {
+  return vars.map(v => `${v.key}=${v.val}`).join('\n');
+}
+
+function renderVars() {
+  document.getElementById('env-rows').innerHTML = vars.map((v, i) => `
+    <div class="env-row" id="erow-${i}">
+      <input class="env-k" value="${esc(v.key)}" oninput="vars[${i}].key=this.value;syncRaw()" placeholder="KEY"/>
+      <div style="position:relative">
+        <input class="env-v" type="${v.hidden && !v.shown ? 'password' : 'text'}" value="${esc(v.val)}" oninput="vars[${i}].val=this.value;syncRaw()" placeholder="value"/>
+        ${v.hidden ? `<button onclick="vars[${i}].shown=!vars[${i}].shown;renderVars()" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--fg2);display:flex;padding:2px" title="Toggle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>` : ''}
+      </div>
+      <button class="btn bd-btn btn-ico btn-sm" onclick="vars.splice(${i},1);renderVars();syncRaw()" title="Remove">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="width:13px;height:13px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>`).join('') || '<div class="muted text-sm" style="padding:12px 0">No variables. Click "Add Variable" to get started.</div>';
+}
+
+function syncRaw() {
+  document.getElementById('env-raw').value = serializeEnv(vars);
+}
+
+function addVar() {
+  vars.push({ key: 'NEW_VAR', val: '', hidden: false, shown: true });
+  renderVars(); syncRaw();
+  setTimeout(() => {
+    const rows = document.querySelectorAll('.env-k');
+    if (rows.length) rows[rows.length - 1].focus();
+  }, 50);
+}
+
+function addPreset(key, val) {
+  if (vars.find(v => v.key === key)) { Flashely.toast(key + ' already exists','warning'); return; }
+  vars.push({ key, val, hidden: /token|secret|password|key|auth/i.test(key), shown: false });
+  renderVars(); syncRaw();
+  Flashely.toast('Added ' + key,'success');
+}
+
+function switchMode(m, el) {
+  mode = m;
+  document.querySelectorAll('.tabs-mode .tab').forEach(t => t.classList.remove('act'));
+  el.classList.add('act');
+  if (m === 'form') {
+    vars = parseEnv(document.getElementById('env-raw').value);
+    renderVars();
+    document.getElementById('form-view').style.display = '';
+    document.getElementById('raw-view').style.display = 'none';
+  } else {
+    syncRaw();
+    document.getElementById('form-view').style.display = 'none';
+    document.getElementById('raw-view').style.display = '';
+  }
+}
+
+async function saveEnv() {
+  let raw;
+  if (mode === 'form') { syncRaw(); raw = serializeEnv(vars); }
+  else { raw = document.getElementById('env-raw').value; }
+  const res = await Flashely.api(`/bot_env/${srvName}`, {method:'POST', body:{env:raw}});
+  Flashely.toast(res.Message||(res.Success?'Saved!':'Failed'), res.Success?'success':'error');
+}
+
+async function load() {
+  const res = await Flashely.api(`/bot_env/${srvName}`);
+  const raw = (res.Success && res.Data) ? res.Data : '';
+  vars = parseEnv(raw);
+  renderVars(); syncRaw();
+}
+
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+load();
+</script>
+</body>
+</html>

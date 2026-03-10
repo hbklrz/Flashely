@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>Database — Flashely</title>
+<link rel="icon" href="/favicon.png"/>
+<link rel="stylesheet" href="/fl.css"/>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+<style>
+.db-conn-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:99px;font-size:12px;font-weight:700}
+.db-type-card{background:var(--s3);border:2px solid var(--bd);border-radius:var(--r8);padding:14px;cursor:pointer;transition:all var(--t1);text-align:center}
+.db-type-card:hover{border-color:var(--pr)}
+.db-type-card.sel{border-color:var(--pr);background:var(--pr-bg)}
+.db-type-card svg{width:28px;height:28px;margin:0 auto 6px}
+.db-type-card .dt-name{font-size:12px;font-weight:700}
+.query-box{background:#090C14;border:1px solid var(--bd);border-radius:var(--r8);overflow:hidden}
+.query-head{background:#0C0F18;padding:8px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--bd)}
+.query-inp{width:100%;background:none;border:none;color:#CBD5E1;font-family:var(--mono);font-size:13px;padding:12px 14px;resize:vertical;outline:none;line-height:1.6;min-height:100px}
+.query-out{padding:12px 14px;font-family:var(--mono);font-size:12px;color:#94A3B8;white-space:pre-wrap;word-break:break-all;border-top:1px solid var(--bd);max-height:260px;overflow-y:auto;display:none}
+.result-table{width:100%;border-collapse:collapse;font-size:12px}
+.result-table th{background:var(--s4);padding:7px 12px;text-align:left;font-weight:700;font-family:var(--mono);border-bottom:1px solid var(--bd)}
+.result-table td{padding:6px 12px;border-bottom:1px solid var(--bd2);font-family:var(--mono)}
+.result-table tr:hover td{background:var(--s3)}
+</style>
+</head>
+<body>
+<div class="shell">
+<div class="shell-aside"><aside class="aside" id="aside">
+  <div class="aside-brand"><div class="brand-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div class="brand-text"><div class="brand-name">Flashely</div><div class="brand-sub">Hyfo Technology</div></div></div>
+  <div class="aside-nav" id="aside-nav"></div>
+  <div class="aside-foot"><button class="aside-toggle" id="aside-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg><span class="aside-toggle-lbl">Collapse</span></button></div>
+</aside></div>
+<div class="shell-body">
+  <div class="topbar"><div><div class="tb-title" id="tb-title">Database</div></div><div class="row gap-2"><button class="btn bg btn-ico btn-sm" id="theme-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/></svg></button></div></div>
+  <div class="ctx-bar" id="ctx-bar"></div>
+  <div class="shell-content"><div class="page">
+
+    <!-- DB Type Selector -->
+    <div class="card mb-4">
+      <div class="c-hd mb-4">
+        <div class="c-ico ci-b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div>
+        <div><div class="c-title">Database Manager</div><div class="c-sub">Connect and manage your databases</div></div>
+        <div class="ml-a" id="db-conn-status"><span class="db-conn-badge" style="background:var(--s3);color:var(--fg2)">Not Connected</span></div>
+      </div>
+      <div class="g4 mb-4" style="grid-template-columns:repeat(auto-fill,minmax(110px,1fr))">
+        <div class="db-type-card sel" id="dt-sqlite" onclick="selectDbType('sqlite',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+          <div class="dt-name">SQLite</div>
+        </div>
+        <div class="db-type-card" id="dt-mongo" onclick="selectDbType('mongo',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2C8.13 2 5 8.13 5 12c0 2.49.87 4.77 2.31 6.54L12 22l4.69-3.46A9.97 9.97 0 0019 12C19 8.13 15.87 2 12 2z"/></svg>
+          <div class="dt-name">MongoDB</div>
+        </div>
+        <div class="db-type-card" id="dt-mysql" onclick="selectDbType('mysql',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16v12H4z"/><path d="M4 10h16M8 6v12"/></svg>
+          <div class="dt-name">MySQL</div>
+        </div>
+        <div class="db-type-card" id="dt-redis" onclick="selectDbType('redis',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2l9 4.5-9 4.5-9-4.5L12 2z"/><path d="M3 11l9 4.5 9-4.5M3 16l9 4.5 9-4.5"/></svg>
+          <div class="dt-name">Redis</div>
+        </div>
+        <div class="db-type-card" id="dt-json" onclick="selectDbType('json',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <div class="dt-name">JSON DB</div>
+        </div>
+      </div>
+
+      <!-- Connection form (changes by type) -->
+      <div id="conn-form-sqlite" class="conn-form col gap-3">
+        <div class="fld"><label class="lbl">Database File Path</label><input class="inp mono" id="sqlite-path" placeholder="database.db" value="database.db"/></div>
+        <div class="row gap-2">
+          <button class="btn bf btn-sm" onclick="connectDb()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+            Connect
+          </button>
+          <button class="btn bg btn-sm" onclick="checkDbFile()">Check File</button>
+        </div>
+      </div>
+
+      <div id="conn-form-mongo" class="conn-form col gap-3" style="display:none">
+        <div class="fld"><label class="lbl">Connection URI</label><input class="inp mono" id="mongo-uri" placeholder="mongodb://localhost:27017/mydb"/></div>
+        <div class="row gap-2">
+          <button class="btn bf btn-sm" onclick="connectDb()">Connect</button>
+          <button class="btn bg btn-sm" onclick="testConn()">Test Connection</button>
+        </div>
+      </div>
+
+      <div id="conn-form-mysql" class="conn-form col gap-3" style="display:none">
+        <div class="g2" style="gap:10px">
+          <div class="fld"><label class="lbl">Host</label><input class="inp mono" id="mysql-host" placeholder="localhost" value="localhost"/></div>
+          <div class="fld"><label class="lbl">Port</label><input class="inp mono" id="mysql-port" placeholder="3306" value="3306"/></div>
+          <div class="fld"><label class="lbl">Database</label><input class="inp mono" id="mysql-db" placeholder="mydb"/></div>
+          <div class="fld"><label class="lbl">Username</label><input class="inp" id="mysql-user" placeholder="root"/></div>
+        </div>
+        <div class="fld"><label class="lbl">Password</label><input class="inp mono" id="mysql-pass" type="password"/></div>
+        <button class="btn bf btn-sm" onclick="connectDb()">Connect</button>
+      </div>
+
+      <div id="conn-form-redis" class="conn-form col gap-3" style="display:none">
+        <div class="g2" style="gap:10px">
+          <div class="fld"><label class="lbl">Host</label><input class="inp mono" id="redis-host" value="localhost"/></div>
+          <div class="fld"><label class="lbl">Port</label><input class="inp mono" id="redis-port" value="6379"/></div>
+        </div>
+        <div class="fld"><label class="lbl">Password (optional)</label><input class="inp mono" id="redis-pass" type="password"/></div>
+        <button class="btn bf btn-sm" onclick="connectDb()">Connect</button>
+      </div>
+
+      <div id="conn-form-json" class="conn-form col gap-3" style="display:none">
+        <div class="fld"><label class="lbl">JSON File Path</label><input class="inp mono" id="json-path" placeholder="db.json" value="db.json"/></div>
+        <button class="btn bf btn-sm" onclick="connectDb()">Load File</button>
+      </div>
+    </div>
+
+    <!-- Query editor -->
+    <div class="card mb-4">
+      <div class="c-hd">
+        <div class="c-ico ci-v"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg></div>
+        <div><div class="c-title">Query Editor</div><div class="c-sub">Run queries against your database</div></div>
+      </div>
+      <div class="chips mb-3" id="quick-queries">
+        <div class="chip" onclick="setQuery('SELECT * FROM sqlite_master WHERE type=\"table\";')">List Tables</div>
+        <div class="chip" onclick="setQuery('SELECT COUNT(*) FROM ')">Count Rows</div>
+        <div class="chip" onclick="setQuery('PRAGMA table_info(tablename);')">Table Info</div>
+        <div class="chip" onclick="setQuery('SELECT * FROM tablename LIMIT 50;')">Browse</div>
+        <div class="chip" onclick="setQuery('BEGIN TRANSACTION;\n-- your SQL here\nCOMMIT;')">Transaction</div>
+      </div>
+      <div class="query-box">
+        <div class="query-head">
+          <div style="width:10px;height:10px;border-radius:50%;background:#F87171"></div>
+          <div style="width:10px;height:10px;border-radius:50%;background:#FBBF24;margin-left:4px"></div>
+          <div style="width:10px;height:10px;border-radius:50%;background:#34D399;margin-left:4px"></div>
+          <span style="font-family:var(--mono);font-size:11.5px;color:var(--fg2);margin-left:8px;flex:1" id="query-lang">SQLite Query</span>
+          <button class="btn bf btn-sm" onclick="runQuery()" id="run-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Run
+          </button>
+        </div>
+        <textarea class="query-inp" id="query-inp" placeholder="SELECT * FROM users LIMIT 10;" spellcheck="false"></textarea>
+        <div class="query-out" id="query-out"></div>
+      </div>
+    </div>
+
+    <!-- Table browser -->
+    <div class="card mb-4" id="table-browser-card" style="display:none">
+      <div class="c-hd">
+        <div class="c-ico ci-g"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg></div>
+        <div><div class="c-title">Tables</div><div class="c-sub" id="db-name-lbl"></div></div>
+        <button class="btn bg btn-sm ml-a" onclick="refreshTables()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><polyline points="23 4 23 10 17 10"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+          Refresh
+        </button>
+      </div>
+      <div id="tables-list" class="col gap-2"></div>
+    </div>
+
+    <!-- DB Info -->
+    <div class="card" id="db-info-card" style="display:none">
+      <div class="c-hd"><div class="c-ico ci-t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="c-title">Database Info</div></div>
+      <div id="db-info-rows"></div>
+    </div>
+
+  </div></div>
+</div></div>
+<div class="bnav" id="bnav"></div>
+<div class="drawer-bg" id="drawer-bg"></div>
+<div class="drawer" id="drawer"></div>
+<div class="toast-root"></div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+<script src="/fl.js"></script>
+<script>
+Flashely.init('database');
+const srv = Flashely.requireServer();
+if (!srv) throw new Error('no server');
+const srvName = srv.name;
+
+let dbType = 'sqlite';
+let connected = false;
+
+function selectDbType(type, el) {
+  dbType = type;
+  document.querySelectorAll('.db-type-card').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+  document.querySelectorAll('.conn-form').forEach(f => f.style.display = 'none');
+  document.getElementById(`conn-form-${type}`).style.display = 'flex';
+  // Update query hints
+  const labels = { sqlite:'SQLite Query', mongo:'MongoDB Query', mysql:'MySQL Query', redis:'Redis Command', json:'JSON Path' };
+  document.getElementById('query-lang').textContent = labels[type];
+  const chips = { sqlite:['SELECT * FROM sqlite_master WHERE type="table";','SELECT COUNT(*) FROM ','PRAGMA table_info(tablename);','SELECT * FROM tablename LIMIT 50;'], mongo:['db.listCollections().toArray()','db.collection.find({}).limit(50)','db.collection.countDocuments()'], mysql:['SHOW TABLES;','DESCRIBE tablename;','SELECT * FROM tablename LIMIT 50;','SHOW PROCESSLIST;'], redis:['KEYS *','INFO','DBSIZE','TYPE key'], json:['Get all keys','Search value'] };
+  const items = chips[type] || [];
+  document.getElementById('quick-queries').innerHTML = items.map(q => `<div class="chip" onclick="setQuery(${JSON.stringify(q)})">${q.slice(0,30)}${q.length>30?'...':''}</div>`).join('');
+}
+
+function setQuery(q) { document.getElementById('query-inp').value = q; }
+
+async function connectDb() {
+  let path = '';
+  if (dbType === 'sqlite') path = `bots/${srvName}/${document.getElementById('sqlite-path').value}`;
+  else if (dbType === 'json') path = `bots/${srvName}/${document.getElementById('json-path').value}`;
+  
+  setConnStatus('loading', 'Connecting...');
+  
+  if (dbType === 'sqlite' || dbType === 'json') {
+    const res = await Flashely.api('/file_content?path=' + encodeURIComponent(path));
+    if (dbType === 'json' && res.Success) {
+      try {
+        JSON.parse(res.Data);
+        setConnStatus('connected', 'JSON file loaded');
+        document.getElementById('table-browser-card').style.display = '';
+        document.getElementById('db-name-lbl').textContent = document.getElementById('json-path').value;
+        Flashely.toast('JSON database loaded','success');
+        connected = true;
+      } catch(e) { setConnStatus('error', 'Invalid JSON'); Flashely.toast('Invalid JSON file','error'); }
+    } else if (dbType === 'sqlite' && res.Success) {
+      setConnStatus('connected', 'SQLite connected');
+      document.getElementById('table-browser-card').style.display = '';
+      document.getElementById('db-name-lbl').textContent = document.getElementById('sqlite-path').value;
+      connected = true;
+      refreshTables();
+      Flashely.toast('SQLite database connected','success');
+    } else {
+      setConnStatus('notfound', 'File not found');
+      Flashely.toast('Database file not found. It will be created when you run your first query.','warning');
+      connected = true; // Allow queries even if file doesn't exist yet
+    }
+  } else {
+    // For remote DBs: just mark as connected (actual connection happens server-side via terminal)
+    setConnStatus('connected', `${dbType.toUpperCase()} connected`);
+    Flashely.toast(`${dbType} connection saved. Use terminal for full control.`, 'info');
+    connected = true;
+  }
+}
+
+function setConnStatus(state, label) {
+  const el = document.getElementById('db-conn-status');
+  const colors = { connected:['var(--ok-bg)','var(--ok)'], loading:['var(--inf-bg)','var(--inf)'], error:['var(--err-bg)','var(--err)'], notfound:['var(--warn-bg)','var(--warn)'] };
+  const [bg, fg] = colors[state] || ['var(--s3)','var(--fg2)'];
+  el.innerHTML = `<span class="db-conn-badge" style="background:${bg};color:${fg}">${label}</span>`;
+}
+
+async function checkDbFile() {
+  const path = `bots/${srvName}/${document.getElementById('sqlite-path').value}`;
+  const res = await Flashely.api('/file_content?path=' + encodeURIComponent(path));
+  Flashely.toast(res.Success ? 'File found (' + Flashely.bytes(res.Data?.length||0) + ')' : 'File not found — will be created on first write', res.Success ? 'success' : 'warning');
+}
+
+async function runQuery() {
+  const query = document.getElementById('query-inp').value.trim();
+  if (!query) return;
+  const out = document.getElementById('query-out');
+  out.style.display = 'block';
+  out.textContent = 'Running query...';
+  
+  if (dbType === 'json') {
+    try {
+      const path = `bots/${srvName}/${document.getElementById('json-path').value}`;
+      const res = await Flashely.api('/file_content?path=' + encodeURIComponent(path));
+      const data = JSON.parse(res.Data || '{}');
+      out.innerHTML = `<pre style="color:#34D399">${JSON.stringify(data, null, 2)}</pre>`;
+    } catch(e) { out.innerHTML = `<span style="color:#F87171">Error: ${e.message}</span>`; }
+    return;
+  }
+  
+  // For other DB types, run via terminal
+  const cmd = dbType === 'sqlite'
+    ? `sqlite3 bots/${srvName}/${document.getElementById('sqlite-path').value} "${query.replace(/"/g,'\\"').replace(/\n/g,' ')}"`
+    : dbType === 'redis' ? `redis-cli ${query}`
+    : `echo "${query}" | mysql -u root` ;
+  
+  const res = await Flashely.api('/terminal', {method:'POST', body:{command:cmd}});
+  const output = res.output || res.Message || 'No output';
+  
+  if (output.includes('\n') && query.toUpperCase().startsWith('SELECT')) {
+    const lines = output.trim().split('\n');
+    if (lines.length > 1) {
+      const headers = lines[0].split('|').map(h => h.trim()).filter(Boolean);
+      if (headers.length > 1) {
+        let table = `<div style="overflow-x:auto"><table class="result-table"><thead><tr>${headers.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>`;
+        lines.slice(2).filter(l => l && !l.match(/^[-+]+$/)).forEach(row => {
+          const cells = row.split('|').map(c => c.trim()).filter(Boolean);
+          table += `<tr>${cells.map(c=>`<td>${esc(c)}</td>`).join('')}</tr>`;
+        });
+        table += '</tbody></table></div>';
+        out.innerHTML = table;
+        return;
+      }
+    }
+  }
+  out.innerHTML = `<span style="color:#CBD5E1">${esc(output)}</span>`;
+}
+
+async function refreshTables() {
+  const res = await Flashely.api('/terminal', {method:'POST', body:{command:`sqlite3 bots/${srvName}/${document.getElementById('sqlite-path').value || 'database.db'} ".tables"`}});
+  const tables = (res.output || '').trim().split(/\s+/).filter(Boolean);
+  if (!tables.length) { document.getElementById('tables-list').innerHTML = '<div class="muted text-sm">No tables found</div>'; return; }
+  document.getElementById('tables-list').innerHTML = tables.map(t =>
+    `<div class="row-sb" style="padding:10px 12px;background:var(--s3);border-radius:var(--r6);cursor:pointer" onclick="browseTable('${t}')">
+      <div class="row gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:15px;height:15px;color:var(--pr)"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="3" x2="9" y2="21"/></svg><span class="semi" style="font-family:var(--mono);font-size:13px">${t}</span></div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px;color:var(--fg2)"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>`
+  ).join('');
+}
+
+function browseTable(name) {
+  document.getElementById('query-inp').value = `SELECT * FROM ${name} LIMIT 50;`;
+  runQuery();
+}
+
+function testConn() { Flashely.toast('For MongoDB, install mongoose in your project and test connection via code','info'); }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// Keyboard shortcut: Ctrl+Enter to run
+document.getElementById('query-inp').addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); runQuery(); }
+});
+</script>
+</body>
+</html>

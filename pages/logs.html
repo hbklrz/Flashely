@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>Logs — Flashely</title>
+<link rel="icon" href="/favicon.png"/>
+<link rel="stylesheet" href="/fl.css"/>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+<style>
+.log-box{background:#090C14;border:1px solid var(--bd);border-radius:var(--r8);font-family:var(--mono);font-size:12.5px;line-height:1.6;overflow:hidden}
+.log-head{background:#0C0F18;padding:8px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--bd)}
+.log-body{padding:10px 14px;min-height:200px;max-height:calc(100dvh - 360px);overflow-y:auto;white-space:pre-wrap;word-break:break-all;color:#CBD5E1}
+.log-body .l-err{color:#F87171}
+.log-body .l-warn{color:#FBBF24}
+.log-body .l-ok{color:#34D399}
+.log-body .l-sys{color:#818CF8;font-style:italic}
+.log-body .l-hl{background:rgba(251,191,36,.2)}
+.log-search{display:flex;align-items:center;gap:8px;background:var(--s3);border:1px solid var(--bd);border-radius:99px;padding:0 14px;height:36px}
+.log-search input{flex:1;background:none;border:none;font-size:13px;color:var(--fg);font-family:var(--mono)}
+.log-search svg{width:14px;height:14px;color:var(--fg2);flex-shrink:0}
+.log-stats{display:flex;gap:12px;font-size:12px;color:var(--fg2)}
+</style>
+</head>
+<body>
+<div class="shell">
+<div class="shell-aside"><aside class="aside" id="aside">
+  <div class="aside-brand"><div class="brand-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div class="brand-text"><div class="brand-name">Flashely</div><div class="brand-sub">Hyfo Technology</div></div></div>
+  <div class="aside-nav" id="aside-nav"></div>
+  <div class="aside-foot"><button class="aside-toggle" id="aside-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg><span class="aside-toggle-lbl">Collapse</span></button></div>
+</aside></div>
+<div class="shell-body">
+  <div class="topbar"><div><div class="tb-title" id="tb-title">Logs</div></div><div class="row gap-2"><button class="btn bg btn-ico btn-sm" id="theme-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/></svg></button></div></div>
+  <div class="ctx-bar" id="ctx-bar"></div>
+  <div class="shell-content"><div class="page">
+
+    <div class="row-sb mb-4 wrap gap-3">
+      <div class="tabs" id="log-tabs">
+        <div class="tab act" onclick="switchLog('output',this)">Output</div>
+        <div class="tab" onclick="switchLog('error',this)">Error</div>
+        <div class="tab" onclick="switchLog('raw',this)">Raw</div>
+      </div>
+      <div class="row gap-2">
+        <div class="log-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input id="log-search-inp" placeholder="Search logs..." oninput="searchLog(this.value)"/>
+        </div>
+        <button class="btn bg btn-sm" onclick="loadLog()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><polyline points="23 4 23 10 17 10"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+          Refresh
+        </button>
+        <button class="btn bg btn-sm" onclick="copyLog()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy
+        </button>
+        <button class="btn bd-btn btn-sm" onclick="clearLog()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+          Clear
+        </button>
+      </div>
+    </div>
+
+    <!-- Log stats -->
+    <div class="log-stats mb-3" id="log-stats">
+      <span>Lines: <strong id="st-lines">0</strong></span>
+      <span>Errors: <strong class="err" id="st-errs">0</strong></span>
+      <span>Warnings: <strong class="warn" id="st-warns">0</strong></span>
+      <div class="ml-a row gap-2 align-items:center">
+        <label class="row gap-2 text-sm muted" style="cursor:pointer">
+          <label class="tgl" style="transform:scale(.85)"><input type="checkbox" id="auto-scroll" checked/><div class="tgl-track"><div class="tgl-thumb"></div></div></label>
+          Auto-scroll
+        </label>
+        <label class="row gap-2 text-sm muted" style="cursor:pointer">
+          <label class="tgl" style="transform:scale(.85)"><input type="checkbox" id="auto-refresh" checked onchange="toggleAutoRefresh()"/><div class="tgl-track"><div class="tgl-thumb"></div></div></label>
+          Live
+        </label>
+      </div>
+    </div>
+
+    <div class="log-box">
+      <div class="log-head">
+        <div style="display:flex;gap:6px">
+          <div style="width:10px;height:10px;border-radius:50%;background:#F87171"></div>
+          <div style="width:10px;height:10px;border-radius:50%;background:#FBBF24;margin-left:4px"></div>
+          <div style="width:10px;height:10px;border-radius:50%;background:#34D399;margin-left:4px"></div>
+        </div>
+        <div style="font-family:var(--mono);font-size:11.5px;color:var(--fg2);flex:1;margin-left:8px" id="log-filename">output.log</div>
+        <div class="live"><div class="ldot"></div>LIVE</div>
+      </div>
+      <div class="log-body" id="log-body"><span style="color:var(--fg2);font-style:italic">Loading logs...</span></div>
+    </div>
+
+  </div></div>
+</div></div>
+<div class="bnav" id="bnav"></div>
+<div class="drawer-bg" id="drawer-bg"></div>
+<div class="drawer" id="drawer"></div>
+<div class="toast-root"></div>
+<script src="/fl.js"></script>
+<script>
+Flashely.init('logs');
+const srv = Flashely.requireServer();
+if (!srv) throw new Error('no server');
+const srvName = srv.name;
+
+let logType = 'output';
+let rawText = '';
+let refreshTimer = null;
+const endpoints = { output: `/output_log/${srvName}`, error: `/error_log/${srvName}`, raw: `/log/${srvName}` };
+
+async function loadLog() {
+  const res = await Flashely.api(endpoints[logType]);
+  rawText = (res.Success && res.Data) ? String(res.Data) : (res.Message || 'No log data');
+  renderLog(rawText);
+}
+
+function renderLog(text) {
+  const lines = text.split('\n');
+  let errs = 0, warns = 0;
+  const html = lines.map(l => {
+    let cls = '';
+    if (/error|Error|ERR|FATAL/i.test(l)) { cls = 'l-err'; errs++; }
+    else if (/warn|WARN|WARNING/i.test(l)) { cls = 'l-warn'; warns++; }
+    else if (/success|SUCCESS|✓|done|Done/i.test(l)) { cls = 'l-ok'; }
+    else if (/^\s*\[/.test(l) || /^\d{4}-/.test(l)) { cls = 'l-sys'; }
+    return cls ? `<span class="${cls}">${esc(l)}</span>` : esc(l);
+  }).join('\n');
+  document.getElementById('log-body').innerHTML = html || '<span style="color:var(--fg2);font-style:italic">No log entries</span>';
+  document.getElementById('st-lines').textContent = lines.filter(Boolean).length;
+  document.getElementById('st-errs').textContent = errs;
+  document.getElementById('st-warns').textContent = warns;
+  if (document.getElementById('auto-scroll').checked) {
+    const b = document.getElementById('log-body');
+    b.scrollTop = b.scrollHeight;
+  }
+}
+
+function searchLog(q) {
+  if (!q) { renderLog(rawText); return; }
+  const lines = rawText.split('\n');
+  const filtered = lines.map(l => {
+    if (!l.toLowerCase().includes(q.toLowerCase())) return null;
+    const hl = l.replace(new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'gi'), m => `<mark class="l-hl">${esc(m)}</mark>`);
+    return hl;
+  }).filter(l => l !== null);
+  document.getElementById('log-body').innerHTML = filtered.join('\n') || '<span style="color:var(--fg2)">No matches</span>';
+}
+
+function switchLog(type, el) {
+  logType = type;
+  document.querySelectorAll('#log-tabs .tab').forEach(t => t.classList.remove('act'));
+  el.classList.add('act');
+  document.getElementById('log-filename').textContent = {output:'output.log',error:'error.log',raw:'pm2.log'}[type];
+  loadLog();
+}
+
+async function clearLog() {
+  const ok = await Flashely.confirm('Clear logs?', 'This will delete all log entries for this server.', 'Clear', true);
+  if (!ok) return;
+  const ep = logType === 'error' ? `/delete_error_logs/${srvName}` : `/delete_logs/${srvName}`;
+  const res = await Flashely.api(ep, {method:'POST', body:{}});
+  Flashely.toast(res.Message||(res.Success?'Cleared':'Failed'), res.Success?'success':'error');
+  if (res.Success) loadLog();
+}
+
+function copyLog() {
+  navigator.clipboard.writeText(rawText).then(() => Flashely.toast('Copied!','success')).catch(() => Flashely.toast('Copy failed','error'));
+}
+
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function toggleAutoRefresh() {
+  if (document.getElementById('auto-refresh').checked) {
+    refreshTimer = setInterval(loadLog, 3000);
+  } else {
+    clearInterval(refreshTimer);
+  }
+}
+
+loadLog();
+refreshTimer = setInterval(loadLog, 3000);
+</script>
+</body>
+</html>

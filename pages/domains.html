@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>Domains — Flashely</title>
+<link rel="icon" href="/favicon.png"/>
+<link rel="stylesheet" href="/fl.css"/>
+<style>
+.domain-card{background:var(--s3);border:1px solid var(--bd);border-radius:var(--r8);padding:16px}
+.domain-url{font-family:var(--mono);font-size:13px;color:var(--pr);word-break:break-all}
+.port-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;background:var(--s4);border:1px solid var(--bd);border-radius:99px;font-family:var(--mono);font-size:12px;font-weight:700}
+</style>
+</head>
+<body>
+<div class="shell">
+<div class="shell-aside"><aside class="aside" id="aside">
+  <div class="aside-brand"><div class="brand-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div class="brand-text"><div class="brand-name">Flashely</div><div class="brand-sub">Hyfo Technology</div></div></div>
+  <div class="aside-nav" id="aside-nav"></div>
+  <div class="aside-foot"><button class="aside-toggle" id="aside-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg><span class="aside-toggle-lbl">Collapse</span></button></div>
+</aside></div>
+<div class="shell-body">
+  <div class="topbar"><div><div class="tb-title" id="tb-title">Domains</div></div><div class="row gap-2"><button class="btn bg btn-ico btn-sm" id="theme-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/></svg></button></div></div>
+  <div class="ctx-bar" id="ctx-bar"></div>
+  <div class="shell-content"><div class="page">
+
+    <!-- Process info -->
+    <div class="g2 mb-4">
+      <div class="card">
+        <div class="c-hd"><div class="c-ico ci-v"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-4h14v4M12 8v4"/></svg></div><div class="c-title">Process</div></div>
+        <div class="irow"><span class="ik">Name</span><span class="iv" id="d-name">—</span></div>
+        <div class="irow"><span class="ik">PID</span><span class="iv" id="d-pid">—</span></div>
+        <div class="irow"><span class="ik">Status</span><span class="iv" id="d-status">—</span></div>
+        <div class="irow"><span class="ik">Entry</span><span class="iv" id="d-entry">—</span></div>
+        <div class="irow"><span class="ik">Uptime</span><span class="iv" id="d-uptime">—</span></div>
+        <div class="irow"><span class="ik">Restarts</span><span class="iv" id="d-restarts">—</span></div>
+      </div>
+      <div class="card">
+        <div class="c-hd"><div class="c-ico ci-t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg></div><div class="c-title">Network</div></div>
+        <div class="irow"><span class="ik">Hostname</span><span class="iv" id="d-host">—</span></div>
+        <div class="irow"><span class="ik">Internal IP</span><span class="iv" id="d-ip">—</span></div>
+        <div class="irow"><span class="ik">Panel Port</span><span class="iv" id="d-pport">—</span></div>
+        <div class="irow"><span class="ik">Detected Ports</span><span class="iv" id="d-ports">—</span></div>
+      </div>
+    </div>
+
+    <!-- Panel URL -->
+    <div class="card mb-4">
+      <div class="c-hd"><div class="c-ico ci-g"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></div><div class="c-title">Panel URL</div></div>
+      <div class="domain-card mb-3">
+        <div class="muted text-xs mb-1">Panel Address</div>
+        <div class="domain-url" id="panel-url">Loading...</div>
+        <button class="btn bg btn-sm mt-3" onclick="copyUrl('panel-url')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy
+        </button>
+      </div>
+    </div>
+
+    <!-- Custom domain / Reverse proxy -->
+    <div class="card mb-4">
+      <div class="c-hd"><div class="c-ico ci-b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg></div><div><div class="c-title">Reverse Proxy</div><div class="c-sub">Set up a custom domain</div></div></div>
+      <div class="col gap-3">
+        <div class="g2" style="gap:10px">
+          <div class="fld"><label class="lbl">Domain / Subdomain</label><input class="inp mono" id="rp-domain" placeholder="bot.example.com"/></div>
+          <div class="fld"><label class="lbl">App Port</label><input class="inp mono" id="rp-port" placeholder="3000"/></div>
+        </div>
+        <div class="fld"><label class="lbl">Proxy Tool</label>
+          <select class="inp" id="rp-tool">
+            <option value="nginx">Nginx</option>
+            <option value="apache">Apache</option>
+            <option value="caddy">Caddy</option>
+            <option value="cloudflared">Cloudflare Tunnel</option>
+          </select>
+        </div>
+        <button class="btn bt btn-sm" onclick="genConfig()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>
+          Generate Config
+        </button>
+        <div id="rp-config-out" style="display:none">
+          <div style="background:#090C14;border:1px solid var(--bd);border-radius:var(--r8);overflow:hidden">
+            <div style="background:#0C0F18;padding:7px 12px;border-bottom:1px solid var(--bd);display:flex;align-items:center">
+              <span style="font-family:var(--mono);font-size:11px;color:var(--fg2);flex:1" id="rp-config-label">nginx.conf</span>
+              <button class="btn bg btn-sm" onclick="copyConfig()">Copy</button>
+            </div>
+            <pre id="rp-config-code" style="padding:12px 14px;font-family:var(--mono);font-size:12px;color:#CBD5E1;overflow-x:auto;white-space:pre;margin:0"></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Open ports scan -->
+    <div class="card">
+      <div class="c-hd"><div class="c-ico ci-r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div><div class="c-title">Port Scanner</div><div class="c-sub">Check which ports are in use</div></div>
+        <button class="btn bg btn-sm ml-a" onclick="scanPorts()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Scan Ports
+        </button>
+      </div>
+      <div id="ports-out" class="muted text-sm">Click "Scan Ports" to check active ports</div>
+    </div>
+
+  </div></div>
+</div></div>
+<div class="bnav" id="bnav"></div>
+<div class="drawer-bg" id="drawer-bg"></div>
+<div class="drawer" id="drawer"></div>
+<div class="toast-root"></div>
+<script src="/fl.js"></script>
+<script>
+Flashely.init('domains');
+const srv = Flashely.requireServer();
+if (!srv) throw new Error('no server');
+const srvName = srv.name;
+
+async function loadInfo() {
+  const [apps, sys] = await Promise.all([Flashely.api('/list-apps'), Flashely.api('/system_full')]);
+  const app = Array.isArray(apps) ? apps.find(a => a.App?.Name === srvName) : null;
+  if (app) {
+    document.getElementById('d-name').textContent = srvName;
+    document.getElementById('d-pid').textContent = app.App?.Pid || '—';
+    document.getElementById('d-status').innerHTML = Flashely.statusBadge(app.App?.Status || 'stopped');
+    document.getElementById('d-entry').textContent = app.App?.Entry || '—';
+    document.getElementById('d-uptime').textContent = Flashely.uptime(app.App?.Uptime || 0);
+    document.getElementById('d-restarts').textContent = app.App?.Restarts || '0';
+  }
+  if (sys.Success) {
+    const d = sys.Data;
+    document.getElementById('d-host').textContent = d.hostname || location.hostname;
+    document.getElementById('d-ip').textContent = d.ip || 'localhost';
+    document.getElementById('d-pport').textContent = location.port || '3000';
+    document.getElementById('panel-url').textContent = location.origin;
+  }
+}
+
+async function scanPorts() {
+  const out = document.getElementById('ports-out');
+  out.innerHTML = '<div class="row gap-2"><div class="spin"></div><span class="muted text-sm">Scanning ports...</span></div>';
+  const res = await Flashely.api('/terminal', {method:'POST', body:{command:'netstat -tlnp 2>/dev/null | tail -n +3 | awk \'{print $4, $7}\' | head -20 || ss -tlnp 2>/dev/null | tail -n +2 | awk \'{print $4, $6}\' | head -20'}});
+  const lines = (res.output || '').trim().split('\n').filter(Boolean);
+  if (!lines.length) { out.textContent = 'No open ports found'; return; }
+  out.innerHTML = '<div class="col gap-2">' + lines.map(l => {
+    const parts = l.split(/\s+/);
+    const addr = parts[0] || l;
+    const proc = parts[1] || '';
+    return `<div class="row-sb" style="padding:8px 12px;background:var(--s3);border-radius:8px"><span class="mono text-sm pr">${addr}</span><span class="muted text-xs">${proc.replace(/\d+\//,'')}</span></div>`;
+  }).join('') + '</div>';
+}
+
+const NGINX_TPL = (domain, port) => `server {
+    listen 80;
+    server_name ${domain};
+
+    location / {
+        proxy_pass http://localhost:${port};
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_cache_bypass $http_upgrade;
+    }
+}`;
+
+const CADDY_TPL = (domain, port) => `${domain} {
+    reverse_proxy localhost:${port}
+}`;
+
+const CLOUDFLARE_TPL = (domain, port) => `# Cloudflare Tunnel config
+# 1. Install cloudflared: npm install -g cloudflared
+# 2. Authenticate: cloudflared tunnel login
+# 3. Create tunnel: cloudflared tunnel create ${domain.split('.')[0]}
+# 4. Route DNS: cloudflared tunnel route dns <tunnel-id> ${domain}
+# 5. Run tunnel:
+cloudflared tunnel run --url http://localhost:${port}`;
+
+function genConfig() {
+  const domain = document.getElementById('rp-domain').value.trim() || 'example.com';
+  const port = document.getElementById('rp-port').value.trim() || '3000';
+  const tool = document.getElementById('rp-tool').value;
+  const configs = { nginx: [NGINX_TPL(domain,port),'nginx.conf'], caddy: [CADDY_TPL(domain,port),'Caddyfile'], cloudflared: [CLOUDFLARE_TPL(domain,port),'tunnel.sh'], apache: [`<VirtualHost *:80>\n    ServerName ${domain}\n    ProxyPass / http://localhost:${port}/\n    ProxyPassReverse / http://localhost:${port}/\n</VirtualHost>`,'apache.conf'] };
+  const [code, label] = configs[tool] || configs.nginx;
+  document.getElementById('rp-config-code').textContent = code;
+  document.getElementById('rp-config-label').textContent = label;
+  document.getElementById('rp-config-out').style.display = '';
+}
+
+function copyConfig() { navigator.clipboard.writeText(document.getElementById('rp-config-code').textContent); Flashely.toast('Config copied!','success'); }
+function copyUrl(id) { navigator.clipboard.writeText(document.getElementById(id).textContent); Flashely.toast('Copied!','success'); }
+
+loadInfo();
+</script>
+</body>
+</html>

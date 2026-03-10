@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>Startup — Flashely</title>
+<link rel="icon" href="/favicon.png"/>
+<link rel="stylesheet" href="/fl.css"/>
+<link rel="stylesheet" href="/codemirror.css"/>
+<link rel="stylesheet" href="/dracula.css"/>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+<style>
+.pkg-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:8px;background:var(--s3);border:1px solid var(--bd);font-size:12px;font-family:var(--mono);font-weight:500}
+.pkg-chip button{background:none;border:none;cursor:pointer;color:var(--fg2);display:flex;line-height:1;padding:0}
+.pkg-chip button:hover{color:var(--err)}
+.pkg-chip button svg{width:12px;height:12px}
+.install-log{background:#090C14;border:1px solid var(--bd);border-radius:var(--r8);padding:12px 14px;font-family:var(--mono);font-size:12px;color:#CBD5E1;max-height:200px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;display:none}
+</style>
+</head>
+<body>
+<div class="shell">
+<div class="shell-aside"><aside class="aside" id="aside">
+  <div class="aside-brand"><div class="brand-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div class="brand-text"><div class="brand-name">Flashely</div><div class="brand-sub">Hyfo Technology</div></div></div>
+  <div class="aside-nav" id="aside-nav"></div>
+  <div class="aside-foot"><button class="aside-toggle" id="aside-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg><span class="aside-toggle-lbl">Collapse</span></button></div>
+</aside></div>
+<div class="shell-body">
+  <div class="topbar"><div><div class="tb-title" id="tb-title">Startup</div></div><div class="row gap-2"><button class="btn bg btn-ico btn-sm" id="theme-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/></svg></button></div></div>
+  <div class="ctx-bar" id="ctx-bar"></div>
+  <div class="shell-content"><div class="page">
+
+    <!-- Startup Command Editor -->
+    <div class="card mb-4">
+      <div class="c-hd">
+        <div class="c-ico ci-v"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg></div>
+        <div><div class="c-title">Startup Command</div><div class="c-sub">Command executed when server starts</div></div>
+      </div>
+      <div style="background:#090C14;border:1px solid var(--bd);border-radius:var(--r8);overflow:hidden;margin-bottom:14px">
+        <div style="background:#0C0F18;padding:6px 12px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:8px">
+          <span style="font-size:11px;font-weight:600;color:var(--fg2);font-family:var(--mono)">startup.sh</span>
+          <div class="live ml-a" id="cmd-saved-indicator" style="display:none"><div class="ldot" style="background:var(--ok)"></div><span style="color:var(--ok)">SAVED</span></div>
+        </div>
+        <textarea id="startup-cmd" rows="4" style="width:100%;background:none;border:none;color:#CBD5E1;font-family:var(--mono);font-size:13px;padding:12px 14px;resize:vertical;outline:none;line-height:1.6" placeholder="node index.js"></textarea>
+      </div>
+      <div class="row gap-2 flex-wrap">
+        <button class="btn bg btn-sm" onclick="wrapCmd()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+          Word Wrap
+        </button>
+        <button class="btn bg btn-sm" onclick="copyCmd()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy
+        </button>
+        <button class="btn bg btn-sm" onclick="resetCmd()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+          Reset
+        </button>
+        <button class="btn bf btn-sm ml-a" onclick="saveCmd()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+          Save Command
+        </button>
+      </div>
+    </div>
+
+    <!-- Node.js / Runtime -->
+    <div class="card mb-4">
+      <div class="c-hd">
+        <div class="c-ico ci-g"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg></div>
+        <div><div class="c-title">Runtime</div><div class="c-sub">Node.js version and engine</div></div>
+      </div>
+      <div class="g2" style="gap:12px">
+        <div class="fld">
+          <label class="lbl">Runtime Environment</label>
+          <select class="inp" id="runtime-sel">
+            <option value="node">Node.js (npm)</option>
+            <option value="bun">Bun</option>
+            <option value="python3">Python 3</option>
+            <option value="python">Python 2</option>
+            <option value="bash">Bash/Shell</option>
+          </select>
+        </div>
+        <div class="fld">
+          <label class="lbl">Main Entry File</label>
+          <input class="inp mono" id="entry-file" placeholder="index.js" value="index.js"/>
+        </div>
+      </div>
+      <div class="irow mt-3"><span class="ik">Detected Node.js</span><span class="iv" id="node-version">—</span></div>
+      <div class="irow"><span class="ik">npm version</span><span class="iv" id="npm-version">—</span></div>
+    </div>
+
+    <!-- Additional npm packages -->
+    <div class="card mb-4">
+      <div class="c-hd">
+        <div class="c-ico ci-b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="8" width="20" height="8" rx="1"/><path d="M9 8v8M15 8v5"/></svg></div>
+        <div><div class="c-title">Additional npm Packages</div><div class="c-sub">Install packages for this server</div></div>
+      </div>
+      <div class="row gap-2 mb-3">
+        <input class="inp mono" id="pkg-input" placeholder="package-name@version" style="flex:1"/>
+        <button class="btn bf btn-sm" onclick="installPkg()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Add Package
+        </button>
+      </div>
+      <!-- Popular packages -->
+      <div class="chips mb-3">
+        <div class="chip" onclick="quickPkg('discord.js')">discord.js</div>
+        <div class="chip" onclick="quickPkg('axios')">axios</div>
+        <div class="chip" onclick="quickPkg('dotenv')">dotenv</div>
+        <div class="chip" onclick="quickPkg('express')">express</div>
+        <div class="chip" onclick="quickPkg('telegraf')">telegraf</div>
+        <div class="chip" onclick="quickPkg('mongoose')">mongoose</div>
+        <div class="chip" onclick="quickPkg('ws')">ws</div>
+        <div class="chip" onclick="quickPkg('node-fetch')">node-fetch</div>
+      </div>
+      <div id="install-log" class="install-log"></div>
+      <div id="installed-pkgs" class="row gap-2 flex-wrap mt-3"></div>
+      <div class="row gap-2 mt-3">
+        <button class="btn bg btn-sm" onclick="runNpmInstall()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><polyline points="23 4 23 10 17 10"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+          Run npm install
+        </button>
+      </div>
+    </div>
+
+    <!-- Server Configuration -->
+    <div class="card mb-4">
+      <div class="c-hd">
+        <div class="c-ico ci-t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div>
+        <div><div class="c-title">Server Configuration</div><div class="c-sub">Git, auto-update and deployment settings</div></div>
+      </div>
+      <div class="col gap-4">
+        <div class="g2" style="gap:12px">
+          <div class="fld"><label class="lbl">Git Repository URL</label><input class="inp mono" id="git-url" placeholder="https://github.com/user/repo.git"/></div>
+          <div class="fld"><label class="lbl">Install Branch</label><input class="inp mono" id="git-branch" placeholder="main" value="main"/></div>
+        </div>
+        <div class="g2" style="gap:12px">
+          <div class="fld"><label class="lbl">Git Username</label><input class="inp" id="git-user" placeholder="username"/></div>
+          <div class="fld"><label class="lbl">Git Access Token</label><input class="inp mono" id="git-token" type="password" placeholder="ghp_xxxxxxxxxxxx"/></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--bd2)">
+          <div><div class="semi" style="font-size:13.5px">Auto Update</div><div class="muted text-xs mt-1">Pull latest changes on restart</div></div>
+          <label class="tgl"><input type="checkbox" id="auto-update"/><div class="tgl-track"><div class="tgl-thumb"></div></div></label>
+        </div>
+        <div class="row gap-2">
+          <button class="btn bt btn-sm" onclick="gitPull()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><polyline points="23 4 23 10 17 10"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+            Pull Latest
+          </button>
+          <button class="btn bf btn-sm" onclick="saveConfig()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/></svg>
+            Save Config
+          </button>
+        </div>
+        <div id="git-log" class="install-log"></div>
+      </div>
+    </div>
+
+  </div></div>
+</div></div>
+<div class="bnav" id="bnav"></div>
+<div class="drawer-bg" id="drawer-bg"></div>
+<div class="drawer" id="drawer"></div>
+<div class="toast-root"></div>
+<script src="/fl.js"></script>
+<script>
+Flashely.init('startup');
+const srv = Flashely.requireServer();
+if (!srv) throw new Error('no server');
+const srvName = srv.name;
+
+let pkgs = [];
+
+async function loadVersions() {
+  const res = await Flashely.api('/terminal', {method:'POST', body:{command:'node -v && npm -v'}});
+  if (res.output) {
+    const lines = res.output.split('\n').filter(Boolean);
+    document.getElementById('node-version').textContent = lines[0] || '—';
+    document.getElementById('npm-version').textContent = lines[1] || '—';
+  }
+}
+
+async function loadPackageJson() {
+  const res = await Flashely.api(`/file_content?path=${encodeURIComponent('bots/'+srvName+'/package.json')}`);
+  if (res.Success && res.Data) {
+    try {
+      const pkg = JSON.parse(res.Data);
+      pkgs = Object.keys(pkg.dependencies || {});
+      renderPkgs();
+      if (pkg.scripts?.start) document.getElementById('startup-cmd').value = 'npm start';
+      if (pkg.main) document.getElementById('entry-file').value = pkg.main;
+    } catch(e) {}
+  }
+}
+
+function renderPkgs() {
+  document.getElementById('installed-pkgs').innerHTML = pkgs.map((p,i) =>
+    `<span class="pkg-chip">${p}<button onclick="removePkg(${i})" title="Remove"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></span>`
+  ).join('');
+}
+
+function removePkg(i) { pkgs.splice(i, 1); renderPkgs(); }
+
+function quickPkg(name) { document.getElementById('pkg-input').value = name; installPkg(); }
+
+async function installPkg() {
+  const pkg = document.getElementById('pkg-input').value.trim();
+  if (!pkg) return;
+  const log = document.getElementById('install-log');
+  log.style.display = 'block';
+  log.textContent += `\n$ npm install ${pkg} (installing...)`;
+  const res = await Flashely.api('/install_package', {method:'POST', body:{name:srvName, package:pkg}});
+  log.textContent += '\n' + (res.Output || res.Message || 'Done');
+  log.scrollTop = log.scrollHeight;
+  Flashely.toast(res.Message||(res.Success?'Installed':'Failed'), res.Success?'success':'error');
+  if (res.Success) { pkgs.push(pkg.split('@')[0]); renderPkgs(); document.getElementById('pkg-input').value = ''; }
+}
+
+async function runNpmInstall() {
+  const log = document.getElementById('install-log');
+  log.style.display = 'block';
+  log.textContent += '\n$ npm install (running...)';
+  const res = await Flashely.api(`/npm_install/${srvName}`);
+  log.textContent += '\n' + (res.Output || res.Message || 'Done');
+  log.scrollTop = log.scrollHeight;
+  Flashely.toast(res.Message||(res.Success?'npm install done':'Failed'), res.Success?'success':'error');
+}
+
+async function saveCmd() {
+  const cmd = document.getElementById('startup-cmd').value;
+  const entry = document.getElementById('entry-file').value.trim();
+  const res = await Flashely.api('/update_main', {method:'POST', body:{name:srvName, main_entry:entry}});
+  Flashely.toast(res.Message||(res.Success?'Saved':'Failed'), res.Success?'success':'error');
+  if (res.Success) {
+    const ind = document.getElementById('cmd-saved-indicator');
+    ind.style.display = 'flex';
+    setTimeout(() => ind.style.display = 'none', 3000);
+  }
+}
+
+function resetCmd() { document.getElementById('startup-cmd').value = `node ${document.getElementById('entry-file').value || 'index.js'}`; }
+function copyCmd() { navigator.clipboard.writeText(document.getElementById('startup-cmd').value); Flashely.toast('Copied!','success'); }
+function wrapCmd() {
+  const ta = document.getElementById('startup-cmd');
+  ta.style.whiteSpace = ta.style.whiteSpace === 'nowrap' ? 'pre-wrap' : 'nowrap';
+}
+
+async function gitPull() {
+  const log = document.getElementById('git-log');
+  log.style.display = 'block';
+  log.textContent += '\n$ git pull...';
+  const res = await Flashely.api('/git_pull', {method:'POST', body:{name:srvName}});
+  log.textContent += '\n' + (res.Message || 'Done');
+  log.scrollTop = log.scrollHeight;
+  Flashely.toast(res.Message||(res.Success?'Pulled':'Failed'), res.Success?'success':'error');
+}
+
+async function saveConfig() {
+  const url = document.getElementById('git-url').value.trim();
+  if (url) {
+    const res = await Flashely.api('/git_clone', {method:'POST', body:{url, folder:srvName}});
+    Flashely.toast(res.Message||(res.Success?'Config saved':'Failed'), res.Success?'success':'error');
+  } else {
+    Flashely.toast('Config saved locally','success');
+  }
+}
+
+loadVersions();
+loadPackageJson();
+document.getElementById('startup-cmd').value = `node ${srv.entry || 'index.js'}`;
+</script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>Login — Flashely</title>
+<link rel="icon" href="/favicon.png"/>
+<link rel="stylesheet" href="/fl.css"/>
+<style>
+body{display:flex;align-items:center;justify-content:center;min-height:100dvh;padding:20px}
+.login-wrap{width:100%;max-width:400px}
+.login-logo{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:32px}
+.login-logo-ico{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,rgba(129,140,248,.3),rgba(129,140,248,.1));border:1px solid rgba(129,140,248,.3);display:flex;align-items:center;justify-content:center;color:var(--pr)}
+.login-logo-ico svg{width:22px;height:22px}
+.login-logo-name{font-size:22px;font-weight:800;letter-spacing:-.5px}
+.login-logo-sub{font-size:11px;color:var(--fg2);font-weight:600;text-transform:uppercase;letter-spacing:.8px}
+.login-card{background:var(--s2);border:1px solid var(--bd2);border-radius:20px;padding:32px}
+.login-title{font-size:20px;font-weight:800;margin-bottom:4px;letter-spacing:-.3px}
+.login-sub{font-size:13px;color:var(--fg2);margin-bottom:28px}
+.inp-show{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--fg2);display:flex;padding:4px}
+.inp-show svg{width:16px;height:16px}
+.login-err{background:var(--err-bg);border:1px solid rgba(248,113,113,.25);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--err);margin-bottom:16px;display:none}
+.login-footer{text-align:center;margin-top:20px;font-size:12px;color:var(--fg2)}
+</style>
+</head>
+<body>
+<div class="login-wrap">
+  <div class="login-logo">
+    <div class="login-logo-ico">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+    </div>
+    <div>
+      <div class="login-logo-name">Flashely</div>
+      <div class="login-logo-sub">Hyfo Technology</div>
+    </div>
+  </div>
+  <div class="login-card">
+    <div class="login-title">Welcome back</div>
+    <div class="login-sub">Sign in to your panel</div>
+    <div class="login-err" id="err-box"></div>
+    <div class="col gap-4">
+      <div class="fld">
+        <label class="lbl">Username</label>
+        <input id="usr" class="inp" type="text" placeholder="admin" autocomplete="username" autofocus/>
+      </div>
+      <div class="fld">
+        <label class="lbl">Password</label>
+        <div class="inp-grp">
+          <input id="pwd" class="inp" type="password" placeholder="••••••••" autocomplete="current-password"/>
+          <button class="inp-show" id="show-pwd" type="button">
+            <svg id="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <button class="btn bf btn-xl w-full mt-2" id="login-btn" style="border-radius:12px" onclick="doLogin()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        Sign In
+      </button>
+    </div>
+  </div>
+  <div class="login-footer">Flashely Panel · Hyfo Technology</div>
+</div>
+<div class="toast-root" id="toast-root"></div>
+<script src="/fl.js"></script>
+<script>
+const usr = document.getElementById('usr');
+const pwd = document.getElementById('pwd');
+document.getElementById('show-pwd').onclick = () => {
+  pwd.type = pwd.type === 'password' ? 'text' : 'password';
+};
+[usr,pwd].forEach(el => el.addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); }));
+async function doLogin() {
+  const btn = document.getElementById('login-btn');
+  const err = document.getElementById('err-box');
+  err.style.display = 'none';
+  if (!usr.value.trim()) { showErr('Enter your username'); return; }
+  if (!pwd.value) { showErr('Enter your password'); return; }
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> Signing in...';
+  const res = await Flashely.api('/login', { method:'POST', body:{ username:usr.value.trim(), password:pwd.value }});
+  btn.disabled = false;
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg> Sign In';
+  if (res.Success) { window.location.href = '/dashboard'; }
+  else { showErr(res.Message || 'Invalid credentials'); }
+}
+function showErr(msg) {
+  const err = document.getElementById('err-box');
+  err.textContent = msg; err.style.display = 'block';
+}
+</script>
+</body>
+</html>
