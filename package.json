@@ -1,0 +1,28 @@
+{
+  "name": "discord-bot-panel-enhanced",
+  "version": "2.0.0",
+  "description": "🚀 Enhanced Discord Bot Panel - Material Design 3, Mobile-First, Feature-Rich",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "keywords": ["discord", "bot", "panel", "manager", "termux"],
+  "author": "Enhanced by AI",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.20.0",
+    "chalk": "^2.4.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.0",
+    "express": "^4.18.0",
+    "express-fileupload": "^1.4.0",
+    "express-session": "^1.17.3",
+    "fast-folder-size": "^1.7.0",
+    "path": "^0.12.7",
+    "pm2": "^5.3.0",
+    "system-commands": "^1.1.7",
+    "systeminformation": "^5.18.0",
+    "ws": "^8.13.0"
+  }
+}

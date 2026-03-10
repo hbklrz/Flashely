@@ -1,0 +1,6 @@
+{
+  "BLACK_LISTED_DIRS": ["..", "../", "//", "./", ".bat", ".sh", ".exe", ".vb"],
+  "IGNORE_DIRECTORY": ["logs", "node_modules", ".git"],
+  "MAX_UPLOAD_SIZE_MB": 50,
+  "PANEL_VERSION": "2.0.0"
+}
