@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>Backups — Flashely</title>
+<link rel="icon" href="/favicon.png"/>
+<link rel="stylesheet" href="/fl.css"/>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+<style>
+.bk-card{background:var(--s3);border:1px solid var(--bd);border-radius:var(--r8);padding:14px 16px;display:flex;align-items:center;gap:12px;transition:border-color var(--t1)}
+.bk-card:hover{border-color:var(--pr)}
+.bk-ico{width:40px;height:40px;border-radius:var(--r6);background:var(--inf-bg);color:var(--inf);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.bk-ico svg{width:18px;height:18px}
+.bk-info{flex:1;min-width:0}
+.bk-name{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--mono)}
+.bk-meta{font-size:11.5px;color:var(--fg2);margin-top:2px}
+.bk-acts{display:flex;gap:6px;flex-shrink:0}
+.schedule-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--bd2)}
+.schedule-row:last-child{border-bottom:none}
+</style>
+</head>
+<body>
+<div class="shell">
+<div class="shell-aside"><aside class="aside" id="aside">
+  <div class="aside-brand"><div class="brand-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div class="brand-text"><div class="brand-name">Flashely</div><div class="brand-sub">Hyfo Technology</div></div></div>
+  <div class="aside-nav" id="aside-nav"></div>
+  <div class="aside-foot"><button class="aside-toggle" id="aside-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg><span class="aside-toggle-lbl">Collapse</span></button></div>
+</aside></div>
+<div class="shell-body">
+  <div class="topbar"><div><div class="tb-title" id="tb-title">Backups</div></div><div class="row gap-2"><button class="btn bg btn-ico btn-sm" id="theme-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/></svg></button></div></div>
+  <div class="ctx-bar" id="ctx-bar"></div>
+  <div class="shell-content"><div class="page">
+
+    <!-- Quick backup -->
+    <div class="card mb-4">
+      <div class="c-hd">
+        <div class="c-ico ci-b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+        <div><div class="c-title">Create Backup</div><div class="c-sub">Archive all files for this server</div></div>
+      </div>
+      <div class="col gap-4">
+        <div class="g2" style="gap:12px">
+          <div class="fld">
+            <label class="lbl">Backup Name <span class="muted text-xs">(optional)</span></label>
+            <input class="inp" id="bk-name-inp" placeholder="Auto-generated if empty"/>
+          </div>
+          <div class="fld">
+            <label class="lbl">Format</label>
+            <select class="inp" id="bk-fmt">
+              <option value="zip">ZIP Archive (.zip)</option>
+              <option value="tar">TAR Archive (.tar.gz)</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--bd2)">
+          <div><div class="semi" style="font-size:13.5px">Exclude node_modules</div><div class="muted text-xs mt-1">Skip dependencies folder (recommended)</div></div>
+          <label class="tgl"><input type="checkbox" id="excl-nm" checked/><div class="tgl-track"><div class="tgl-thumb"></div></div></label>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:12px">
+          <div><div class="semi" style="font-size:13.5px">Include .env file</div><div class="muted text-xs mt-1">Include environment variables in backup</div></div>
+          <label class="tgl"><input type="checkbox" id="incl-env"/><div class="tgl-track"><div class="tgl-thumb"></div></div></label>
+        </div>
+        <div class="row gap-2">
+          <button class="btn bf btn-sm" id="bk-create-btn" onclick="createBackup()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Create Backup
+          </button>
+          <div class="muted text-xs row gap-2" style="align-items:center" id="bk-progress" style="display:none">
+            <div class="spin"></div> Creating backup...
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Existing backups -->
+    <div class="card mb-4">
+      <div class="sec-hd">
+        <div>
+          <div class="sec-t">Saved Backups</div>
+          <div class="sec-d" id="bk-count">Loading...</div>
+        </div>
+        <button class="btn bg btn-sm" onclick="loadBackups()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><polyline points="23 4 23 10 17 10"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+          Refresh
+        </button>
+      </div>
+      <div class="col gap-2 mt-3" id="bk-list">
+        <div class="skel" style="height:64px;border-radius:10px"></div>
+        <div class="skel" style="height:64px;border-radius:10px"></div>
+      </div>
+    </div>
+
+    <!-- Auto-backup schedule -->
+    <div class="card">
+      <div class="c-hd">
+        <div class="c-ico ci-y"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+        <div><div class="c-title">Auto Backup Schedule</div><div class="c-sub">Automatic backup configuration</div></div>
+      </div>
+      <div class="schedule-row">
+        <div><div class="semi" style="font-size:13.5px">Enable Auto Backup</div><div class="muted text-xs mt-1">Automatically create backups on schedule</div></div>
+        <label class="tgl"><input type="checkbox" id="auto-bk" onchange="saveSchedule()"/><div class="tgl-track"><div class="tgl-thumb"></div></div></label>
+      </div>
+      <div class="schedule-row">
+        <div><div class="semi" style="font-size:13.5px">Frequency</div></div>
+        <select class="inp" id="bk-freq" onchange="saveSchedule()" style="width:140px;height:34px;font-size:12px">
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option>
+        </select>
+      </div>
+      <div class="schedule-row">
+        <div><div class="semi" style="font-size:13.5px">Keep Last N Backups</div><div class="muted text-xs mt-1">Older backups auto-deleted</div></div>
+        <input class="inp" id="bk-keep" type="number" value="5" min="1" max="50" onchange="saveSchedule()" style="width:80px;height:34px;font-size:12px;text-align:center"/>
+      </div>
+      <div class="schedule-row">
+        <div><div class="semi" style="font-size:13.5px">Next scheduled backup</div></div>
+        <span class="muted text-sm" id="next-bk">—</span>
+      </div>
+    </div>
+
+  </div></div>
+</div></div>
+<div class="bnav" id="bnav"></div>
+<div class="drawer-bg" id="drawer-bg"></div>
+<div class="drawer" id="drawer"></div>
+<div class="toast-root"></div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+<script src="/fl.js"></script>
+<script>
+Flashely.init('backups');
+const srv = Flashely.requireServer();
+if (!srv) throw new Error('no server');
+const srvName = srv.name;
+
+async function createBackup() {
+  const btn = document.getElementById('bk-create-btn');
+  const prog = document.getElementById('bk-progress');
+  btn.disabled = true;
+  prog.style.display = 'flex';
+  const name = document.getElementById('bk-name-inp').value.trim();
+  const res = await Flashely.api(`/zip_bot/${srvName}`, {method:'POST', body:{name: name || undefined}});
+  btn.disabled = false;
+  prog.style.display = 'none';
+  Flashely.toast(res.Message || (res.Success ? 'Backup created!' : 'Failed'), res.Success ? 'success' : 'error');
+  if (res.Success) {
+    loadBackups();
+    // Offer download
+    if (res.Data) {
+      const a = document.createElement('a');
+      a.href = `/file?path=${encodeURIComponent(res.Data)}`;
+      a.download = name || srvName + '-backup.zip';
+      a.click();
+    }
+  }
+}
+
+async function loadBackups() {
+  const res = await Flashely.api(`/list_backups/${srvName}`);
+  const backups = (res.Success && Array.isArray(res.Data)) ? res.Data : [];
+  document.getElementById('bk-count').textContent = backups.length + ' backup(s) · ' + Flashely.bytes(backups.reduce((s,b)=>s+(b.size||0),0)) + ' total';
+  if (!backups.length) {
+    document.getElementById('bk-list').innerHTML = `<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><div class="empty-t">No backups yet</div><div class="empty-d">Create your first backup above</div></div>`;
+    return;
+  }
+  document.getElementById('bk-list').innerHTML = backups.map(b => `
+    <div class="bk-card">
+      <div class="bk-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+      <div class="bk-info">
+        <div class="bk-name">${b.name || b.Name}</div>
+        <div class="bk-meta">${Flashely.bytes(b.size||0)} · ${Flashely.ago(b.created||b.mtime||Date.now())}</div>
+      </div>
+      <div class="bk-acts">
+        <a class="btn bt btn-sm" href="/file?path=${encodeURIComponent(b.path||('database/'+b.name))}" download title="Download">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download
+        </a>
+        <button class="btn bd-btn btn-ico btn-sm" onclick="deleteBackup('${b.name||b.Name}','${b.path||'database/'+(b.name||b.Name)}')" title="Delete">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+        </button>
+      </div>
+    </div>`).join('');
+}
+
+async function deleteBackup(name, path) {
+  const ok = await Flashely.confirm('Delete ' + name + '?', 'This backup will be permanently removed.', 'Delete', true);
+  if (!ok) return;
+  const res = await Flashely.api('/delete_path', {method:'POST', body:{data:[path]}});
+  Flashely.toast(res.Message||(res.Success?'Deleted':'Failed'), res.Success?'success':'error');
+  if (res.Success) loadBackups();
+}
+
+function saveSchedule() {
+  const freq = document.getElementById('bk-freq').value;
+  const next = freq === 'daily' ? 'Tomorrow at midnight' : freq === 'weekly' ? 'Next Monday' : 'First of next month';
+  document.getElementById('next-bk').textContent = document.getElementById('auto-bk').checked ? next : '—';
+  Flashely.toast('Schedule saved','success');
+}
+
+loadBackups();
+</script>
+</body>
+</html>
